@@ -165,21 +165,24 @@ class TestRelease < Minitest::Test
     end
   end
 
-  # The repository is staged for 1.0.0: no tag yet, version.rb holds 1.0.0, and the
-  # [Unreleased] section has the entries of the release.
-  def test_this_repository_prepares_1_0_0
+  # The CHANGELOG of this repository can always release the version of version.rb. Before
+  # the release pull request, `prepare` dates the [Unreleased] entries; after it, the
+  # version has its dated section, so `status` publishes it while it has no tag.
+  def test_this_repository_can_release_the_version_of_version_rb
     changelog = File.read(File.join(ROOT, Release::CHANGELOG))
-    version = File.read(File.join(ROOT, Release::VERSION_FILE))
-    in_repository(version: Release.file_version(version).to_s, changelog: changelog, tags: []) do |dir|
-      assert_equal [0, "1.0.0"], Release.main(["prepare", "patch", "2026-11-10"], dir)
-      assert_equal LOCK_TEXT, File.read(File.join(dir, "Gemfile.lock"))
-      assert_equal [0, "1.0.0 publish"], Release.main(["status"], dir)
+    version = Release.file_version(File.read(File.join(ROOT, Release::VERSION_FILE))).to_s
+    in_repository(version: version, changelog: changelog, tags: []) do |dir|
+      unless Release.dated_section(changelog, Release::Version.parse(version))
+        assert_equal [0, version], Release.main(["prepare", "patch", "2026-11-10"], dir)
+        assert_equal LOCK_TEXT.gsub("agentcat (1.0.0)", "agentcat (#{version})"), File.read(File.join(dir, "Gemfile.lock"))
+      end
+      assert_equal [0, "#{version} publish"], Release.main(["status"], dir)
 
-      code, notes = Release.main(["notes", "1.0.0"], dir)
+      code, notes = Release.main(["notes", version], dir)
       assert_equal 0, code
-      assert_includes notes, "### Added"
-      refute_includes notes, "## [0.0.1]"
-      assert_includes File.read(File.join(dir, Release::CHANGELOG)), "[1.0.0]: #{REPO}/releases/tag/v1.0.0"
+      assert_includes notes, "### "
+      refute_includes notes, "## ["
+      assert_includes File.read(File.join(dir, Release::CHANGELOG)), "[#{version}]: #{REPO}/"
     end
   end
 
