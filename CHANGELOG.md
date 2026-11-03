@@ -7,6 +7,8 @@ and this project follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-11-03
+
 The first stable release of the SDK. From this release on, the public API
 follows Semantic Versioning: a breaking change needs a new major version.
 
@@ -65,4 +67,5 @@ follows Semantic Versioning: a breaking change needs a new major version.
 - A placeholder that reserves the `agentcat` gem name on RubyGems. It
   contains no SDK code.
 
-[Unreleased]: https://github.com/agentcathq/agentcat-ruby-sdk/commits/main
+[Unreleased]: https://github.com/agentcathq/agentcat-ruby-sdk/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/agentcathq/agentcat-ruby-sdk/releases/tag/v1.0.0
