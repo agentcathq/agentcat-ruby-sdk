@@ -1,0 +1,106 @@
+# What real agents send as clientInfo.name and User-Agent. Used by
+# test/test_client_readers.rb, one test per entry. Quote everything: names like
+# "@librechat/api-client" aren't valid bare YAML.
+
+client_names:
+  # Anthropic
+  - "claude-ai"                       # Claude Desktop
+  - "claude-code"
+  - "claude-desktop-3p"               # Claude Desktop agent mode
+  - "Anthropic/ClaudeAI"              # Claude.ai remote connectors
+  - "Anthropic/API"                   # Messages API MCP connector
+  # OpenAI
+  - "codex-mcp-client"
+  - "Codex"
+  - "openai-mcp"                      # ChatGPT connectors
+  - "ChatGPT"
+  # Cursor / VS Code family
+  - "cursor-vscode"
+  - "Visual Studio Code"
+  - "Visual-Studio-Code"
+  - "Code - OSS"
+  - "Windsurf"
+  - "windsurf-client"
+  - "antigravity-client"              # Google Antigravity
+  - "Trae"
+  # GitHub Copilot
+  - "github-copilot-developer"        # Copilot CLI
+  - "Xcode-copilot-xcode"
+  - "JetBrains-IU/copilot-intellij"
+  - "JetBrains-IU-copilot-intellij"
+  - "JetBrains-JBC-copilot-intellij"
+  - "jetbrains-ai-assistant-client"
+  - "mcs"                             # Copilot Studio
+  # Google
+  - "gemini-cli"
+  - "gemini-cli-mcp-client"
+  # VS Code extensions
+  - "Cline"
+  - "Roo Code"
+  - "Roo-Code"
+  - "Kilo-Code"
+  - "continue-client"
+  - "continue-cli-client"
+  # Terminal agents
+  - "goose"
+  - "goose-cli"
+  - "goose-desktop"
+  - "opencode"
+  - "crush"
+  - "amp-mcp-client"
+  - "factory-cli"
+  - "q-cli"                           # Amazon Q CLI
+  - "Q-DEV-CLI"                       # Amazon Q Developer CLI / Kiro
+  - "grok-cli"
+  - "warp"
+  - "fx"
+  - "mcp-cli"
+  - "mcpc"
+  - "mcpx"
+  # Editors
+  - "Zed"
+  - "emacs"
+  - "helix"
+  - "mise"
+  # Desktop chat apps
+  - "Mistral"                         # Le Chat
+  - "Cherry Studio"
+  - "Jan-Streamable-Client"
+  - "com.raycast.macos"
+  - "@librechat/api-client"
+  - "lobehub-mcp-client"
+  # Platforms, automation, gateways
+  - "replit-workspace"
+  - "Postman-Client"
+  - "@n8n/n8n-nodes-langchain.mcpClientTool"
+  - "make-app-mcp-client"
+  - "dust-mcp-client"
+  - "apify-mcp-client"
+  - "arcade"
+  - "Alpic"
+  - "Glama"
+  - "gitguardian"
+  - "CodeRabbit"
+  - "docker-mcp-gateway"
+  - "etherassist-mcp-client"
+  - "test-client"                     # Smithery playground
+  # SDK defaults, sent when the host app doesn't set its own name
+  - "ai-sdk-mcp-client"               # Vercel AI SDK
+  - "spring-ai-mcp-client"
+  - "mcp"                             # Python SDK
+  - "mcp-ruby-client"                 # Ruby `mcp` gem
+
+# Only UAs someone actually saw in a request, nothing made up from the name.
+user_agents:
+  - "claude-code/2.1.114 (cli)"
+  - "claude-code/2.1.114 (sdk-cli)"
+  - "Cursor/2.6.22"
+  - "codex-mcp-client/0.147.0"
+  - "openai-mcp/1.0.0"
+  - "openai-mcp/1.0.0 (Codex)"
+  - "grok-cli/1.2.3"
+  - "Q-DEV-CLI"
+  - "GitHub Copilot"
+  - "node"
+  - "python-httpx/0.28.1"
+  - "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"

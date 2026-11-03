@@ -1,0 +1,18 @@
+[
+  {"number": "2.0.0.pre1", "prerelease": true, "platform": "ruby", "ruby_version": ">= 2.7.0"},
+  {"number": "1.8.2", "prerelease": false, "platform": "ruby", "ruby_version": ">= 2.7.0"},
+  {"number": "1.8.1", "prerelease": false, "platform": "ruby", "ruby_version": ">= 2.7.0"},
+  {"number": "1.8.0", "prerelease": false, "platform": "ruby", "ruby_version": ">= 2.7.0"},
+  {"number": "1.7.0", "prerelease": false, "platform": "ruby", "ruby_version": ">= 3.2.0"},
+  {"number": "1.6.1", "prerelease": false, "platform": "ruby", "ruby_version": "< 3.4"},
+  {"number": "1.6.0", "prerelease": false, "platform": "ruby", "ruby_version": ">= 2.7.0"},
+  {"number": "1.5.0", "prerelease": false, "platform": "java", "ruby_version": ">= 2.7.0"},
+  {"number": "1.5.0", "prerelease": false, "platform": "ruby", "ruby_version": ">= 3.1.4"},
+  {"number": "1.4.0.1", "prerelease": false, "platform": "ruby", "ruby_version": ">= 2.7.0"},
+  {"number": "1.0.0", "prerelease": false, "platform": "ruby", "ruby_version": null},
+  {"number": "0.24.0", "prerelease": false, "platform": "ruby", "ruby_version": ">= 2.7.0"},
+  {"number": "0.23.1", "prerelease": false, "platform": "ruby", "ruby_version": ">= 2.7.0"},
+  {"number": "0.23.0", "prerelease": false, "platform": "ruby", "ruby_version": ">= 2.7.0"},
+  {"number": "0.22.0", "prerelease": false, "platform": "ruby", "ruby_version": ">= 2.7.0"},
+  {"number": "0.4.0", "prerelease": false, "platform": "ruby", "ruby_version": ">= 3.2.0"}
+]

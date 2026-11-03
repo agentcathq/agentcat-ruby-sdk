@@ -1,0 +1,112 @@
+name: mcp compat
+
+# Runs the unit suite against every `mcp` gem release we support.
+# There is no fixed list: the `discover` job reads the releases from rubygems.org at run
+# time and takes the floor plus the newest patch of every minor at or above it (the newest
+# 1.8.x is 1.8.2, so 1.8.0 and 1.8.1 are not tested). The floor is the `mcp` runtime
+# dependency in agentcat.gemspec, and nowhere else: to raise it, change that one line.
+# A new `mcp` release joins the matrix on the next run. When it breaks AgentCat, the job
+# for that version fails and its name shows the version; a nightly failure also opens
+# (or comments on) a GitHub issue that names the failing versions.
+#
+# GitHub runs a `schedule` trigger only from the default branch, so the nightly run starts
+# once this workflow is on `main`.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "23 4 * * *" # nightly
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# `rbi` (tapioca) isn't needed here — see agentcat.gemspec's comment on why it is not a
+# gemspec dev dependency. Skipping the group keeps installs small.
+env:
+  BUNDLE_WITHOUT: rbi
+
+jobs:
+  discover:
+    name: discover mcp versions
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      matrix: ${{ steps.versions.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4"
+      # The Rubies to test on. A version whose `ruby_version` on rubygems.org rejects one
+      # of them (a release that needs Ruby >= 3.4 skips 3.3, for example) is not tested on
+      # that Ruby; the log lists each skipped pair.
+      - name: Read the mcp releases from rubygems.org
+        id: versions
+        run: |
+          matrix="$(ruby scripts/mcp_versions.rb 3.3 3.4 4.0)"
+          echo "matrix=${matrix}" >> "$GITHUB_OUTPUT"
+          ruby -rjson -e 'JSON.parse(ARGV[0])["include"].each { |row| puts "- mcp #{row["mcp"]} on Ruby #{row["ruby"]}" }' "$matrix" >> "$GITHUB_STEP_SUMMARY"
+
+  compat:
+    name: mcp ${{ matrix.mcp }} (ruby ${{ matrix.ruby }})
+    needs: discover
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.discover.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      # No bundler-cache: it installs from the committed lock in frozen mode, and the pin
+      # below changes the lock on purpose.
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+      # The gemspec's `mcp >= floor` stays; the extra Gemfile line narrows it to one version.
+      - name: Pin mcp ${{ matrix.mcp }}
+        run: printf '\ngem "mcp", "= %s"\n' "${{ matrix.mcp }}" >> Gemfile
+      # Re-resolves only what the pin needs; every other gem keeps its locked version.
+      - run: bundle install --jobs 4 --retry 3
+        env:
+          BUNDLE_FROZEN: "false"
+      - name: Check the installed mcp version
+        # A block scalar: in a plain YAML value, " #" starts a comment and cuts the command.
+        run: |
+          bundle exec ruby -e 'require "mcp"; v = MCP::VERSION; abort("mcp #{v} installed, expected #{ARGV[0]}") unless v == ARGV[0]; puts "mcp #{v}"' "${{ matrix.mcp }}"
+      - run: bundle exec rake
+
+  # A nightly failure must reach a person: one open issue, with a comment for each failing
+  # run after that. A person closes it after the fix. Pull requests and pushes show the
+  # failure on the commit instead.
+  report:
+    name: report a nightly failure
+    needs: [discover, compat]
+    if: failure() && github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: read
+      issues: write
+    steps:
+      - name: Open or update the issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          run_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          # The names of the failed jobs carry the versions: "mcp 1.8.2 (ruby 3.4)".
+          failed="$(gh run view "$GITHUB_RUN_ID" --json jobs --jq '.jobs[] | select(.conclusion == "failure") | "- " + .name')"
+          [ -n "$failed" ] || failed="- (no failed job found; see the run)"
+          title="mcp compat: nightly run failed"
+          body="$(printf 'The nightly `mcp compat` run failed: %s\n\nFailing versions:\n%s\n' "$run_url" "$failed")"
+          gh label create mcp-compat --color B60205 --description "The nightly mcp compat run failed" 2>/dev/null || true
+          number="$(gh issue list --label mcp-compat --state open --limit 100 --json number,title --jq ".[] | select(.title == \"${title}\") | .number" | head -n 1)"
+          if [ -n "$number" ]; then
+            gh issue comment "$number" --body "$body"
+          else
+            gh issue create --title "$title" --label mcp-compat --body "$body"
+          fi

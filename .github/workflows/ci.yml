@@ -1,0 +1,86 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  # The release workflow starts CI on its release branch: a push by GITHUB_TOKEN starts none.
+  workflow_dispatch:
+
+# `rbi` (tapioca) is needed only by the sorbet-tooling job below, which installs it — see
+# agentcat.gemspec's comment on why it is not a gemspec dev dependency. Every other job
+# skips the group to keep installs small.
+env:
+  BUNDLE_WITHOUT: rbi
+
+jobs:
+  test:
+    name: test (ruby ${{ matrix.ruby }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby: ["3.3", "3.4", "4.0"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+      # COVERAGE=1 starts SimpleCov (test/test_helper.rb), which fails the step when line
+      # coverage drops below its minimum. Unit suite only: e2e alone covers far less.
+      - run: bundle exec rake
+        env:
+          COVERAGE: "1"
+      - run: bundle exec rake test:e2e
+
+  lint:
+    name: standardrb
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4"
+          bundler-cache: true
+      - run: bundle exec standardrb
+
+  sorbet:
+    name: srb tc
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4"
+          bundler-cache: true
+      - run: bundle exec srb tc
+
+  audit:
+    name: bundler-audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4"
+          bundler-cache: true
+      # Standalone, not a Gemfile dependency — this checks our own lockfile's gems
+      # against the advisory database, it isn't something a contributor needs installed.
+      - run: gem install bundler-audit --no-document
+      - run: bundle audit check --update
+
+  sorbet-tooling:
+    name: type coverage & RBI freshness
+    runs-on: ubuntu-latest
+    # Needs tapioca/spoom, which live in the `:rbi` group the other jobs skip —
+    # see agentcat.gemspec's comment on why that group exists.
+    env:
+      BUNDLE_WITHOUT: ""
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4"
+          bundler-cache: true
+      - run: bundle exec rake type_coverage
+      - run: bundle exec rake rbi_freshness

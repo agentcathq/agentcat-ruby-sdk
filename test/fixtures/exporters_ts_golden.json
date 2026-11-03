@@ -1,0 +1,84 @@
+{
+ "otlp": [
+  {
+   "url": "http://collector:4318/v1/traces",
+   "headers": {
+    "Content-Type": "application/json",
+    "x-token": "t"
+   },
+   "body": "{\"resourceSpans\":[{\"resource\":{\"attributes\":[{\"key\":\"service.name\",\"value\":{\"stringValue\":\"test-server\"}},{\"key\":\"service.version\",\"value\":{\"stringValue\":\"1.2.3\"}}]},\"scopeSpans\":[{\"scope\":{\"name\":\"agentcat\",\"version\":\"9.9.9\"},\"spans\":[{\"traceId\":\"d15a9cc12d6d24352735a319fd2016d1\",\"spanId\":\"1fd2359e374104b9\",\"name\":\"mcp:tools/call\",\"kind\":2,\"startTimeUnixNano\":\"1767323045678000000\",\"endTimeUnixNano\":\"1767323045690000000\",\"attributes\":[{\"key\":\"source\",\"value\":{\"stringValue\":\"agentcat\"}},{\"key\":\"mcp.event_type\",\"value\":{\"stringValue\":\"mcp:tools/call\"}},{\"key\":\"mcp.session_id\",\"value\":{\"stringValue\":\"ses_2pQx7Yk3LmN8vB4cD6fG1hJ9sTa\"}},{\"key\":\"mcp.project_id\",\"value\":{\"stringValue\":\"proj_2pQx7Yk3LmN8vB4cD6fG1hJ9sTp\"}},{\"key\":\"mcp.resource_name\",\"value\":{\"stringValue\":\"echo\"}},{\"key\":\"mcp.user_intent\",\"value\":{\"stringValue\":\"testing exporters\"}},{\"key\":\"mcp.actor_id\",\"value\":{\"stringValue\":\"usr_1\"}},{\"key\":\"mcp.actor_name\",\"value\":{\"stringValue\":\"Ada\"}},{\"key\":\"mcp.client_name\",\"value\":{\"stringValue\":\"Claude Desktop\"}},{\"key\":\"mcp.client_version\",\"value\":{\"stringValue\":\"0.9.0\"}},{\"key\":\"agentcat.tag.env\",\"value\":{\"stringValue\":\"test\"}},{\"key\":\"agentcat.tag.Team Name\",\"value\":{\"stringValue\":\"a,b\"}},{\"key\":\"agentcat.properties\",\"value\":{\"stringValue\":\"{\\\"agentcat_context_supplied\\\":true,\\\"agentcat_via_get_more_tools\\\":false}\"}}],\"status\":{\"code\":2}}]}]}]}"
+  }
+ ],
+ "otlp_ok": [
+  {
+   "url": "http://collector:4318/v1/traces",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": "{\"resourceSpans\":[{\"resource\":{\"attributes\":[{\"key\":\"service.name\",\"value\":{\"stringValue\":\"test-server\"}},{\"key\":\"service.version\",\"value\":{\"stringValue\":\"1.2.3\"}}]},\"scopeSpans\":[{\"scope\":{\"name\":\"agentcat\",\"version\":\"9.9.9\"},\"spans\":[{\"traceId\":\"d15a9cc12d6d24352735a319fd2016d1\",\"spanId\":\"1fd2359e374104b9\",\"name\":\"mcp:tools/call\",\"kind\":2,\"startTimeUnixNano\":\"1767323045678000000\",\"endTimeUnixNano\":\"1767323045690000000\",\"attributes\":[{\"key\":\"source\",\"value\":{\"stringValue\":\"agentcat\"}},{\"key\":\"mcp.event_type\",\"value\":{\"stringValue\":\"mcp:tools/call\"}},{\"key\":\"mcp.session_id\",\"value\":{\"stringValue\":\"ses_2pQx7Yk3LmN8vB4cD6fG1hJ9sTa\"}},{\"key\":\"mcp.project_id\",\"value\":{\"stringValue\":\"proj_2pQx7Yk3LmN8vB4cD6fG1hJ9sTp\"}},{\"key\":\"mcp.resource_name\",\"value\":{\"stringValue\":\"echo\"}},{\"key\":\"mcp.user_intent\",\"value\":{\"stringValue\":\"testing exporters\"}},{\"key\":\"mcp.actor_id\",\"value\":{\"stringValue\":\"usr_1\"}},{\"key\":\"mcp.actor_name\",\"value\":{\"stringValue\":\"Ada\"}},{\"key\":\"mcp.client_name\",\"value\":{\"stringValue\":\"Claude Desktop\"}},{\"key\":\"mcp.client_version\",\"value\":{\"stringValue\":\"0.9.0\"}},{\"key\":\"agentcat.tag.env\",\"value\":{\"stringValue\":\"test\"}},{\"key\":\"agentcat.tag.Team Name\",\"value\":{\"stringValue\":\"a,b\"}},{\"key\":\"agentcat.properties\",\"value\":{\"stringValue\":\"{\\\"agentcat_context_supplied\\\":true,\\\"agentcat_via_get_more_tools\\\":false}\"}}],\"status\":{\"code\":1}}]}]}]}"
+  }
+ ],
+ "datadog": [
+  {
+   "url": "https://http-intake.logs.datadoghq.eu/api/v2/logs",
+   "headers": {
+    "DD-API-KEY": "dd-key",
+    "Content-Type": "application/json"
+   },
+   "body": "[{\"message\":\"mcp:tools/call - echo\",\"service\":\"svc\",\"ddsource\":\"agentcat\",\"ddtags\":\"env:prod,event_type:mcp:tools.call,resource:echo,error:true,source:agentcat,agentcat.env:test,agentcat.team_name:a_b\",\"timestamp\":1767323045678,\"status\":\"error\",\"dd\":{\"trace_id\":\"2825343673261102801\",\"span_id\":\"2292954113933116601\"},\"mcp\":{\"session_id\":\"ses_2pQx7Yk3LmN8vB4cD6fG1hJ9sTa\",\"event_id\":\"evt_2pQx7Yk3LmN8vB4cD6fG1hJ9sTu\",\"event_type\":\"mcp:tools/call\",\"resource\":\"echo\",\"duration_ms\":12,\"user_intent\":\"testing exporters\",\"actor_id\":\"usr_1\",\"actor_name\":\"Ada\",\"client_name\":\"Claude Desktop\",\"client_version\":\"0.9.0\",\"server_name\":\"test-server\",\"server_version\":\"1.2.3\",\"is_error\":true,\"error\":{\"message\":\"boom\",\"type\":\"RuntimeError\",\"stack\":\"a.rb:1\"},\"tags\":{\"env\":\"test\",\"Team Name\":\"a,b\"},\"properties\":{\"agentcat_context_supplied\":true,\"agentcat_via_get_more_tools\":false}},\"error\":{\"message\":\"{\\\"message\\\":\\\"boom\\\",\\\"type\\\":\\\"RuntimeError\\\",\\\"stack\\\":\\\"a.rb:1\\\"}\"}}]"
+  },
+  {
+   "url": "https://api.datadoghq.eu/api/v1/series",
+   "headers": {
+    "DD-API-KEY": "dd-key",
+    "Content-Type": "application/json"
+   },
+   "body": "{\"series\":[{\"metric\":\"mcp.events.count\",\"type\":\"count\",\"points\":[[1767323045,1]],\"tags\":[\"service:svc\",\"env:prod\",\"event_type:mcp:tools.call\",\"resource:echo\"]},{\"metric\":\"mcp.event.duration\",\"type\":\"gauge\",\"points\":[[1767323045,12]],\"tags\":[\"service:svc\",\"env:prod\",\"event_type:mcp:tools.call\",\"resource:echo\"]},{\"metric\":\"mcp.errors.count\",\"type\":\"count\",\"points\":[[1767323045,1]],\"tags\":[\"service:svc\",\"env:prod\",\"event_type:mcp:tools.call\",\"resource:echo\"]}]}"
+  }
+ ],
+ "sentry": [
+  {
+   "url": "https://o1.ingest.sentry.io/api/42/envelope/",
+   "headers": {
+    "X-Sentry-Auth": "Sentry sentry_version=7, sentry_client=agentcat/1.0.0, sentry_key=abc123",
+    "Content-Type": "application/x-sentry-envelope"
+   },
+   "body": "{\"event_id\":\"1fd2359e374104b91fd2359e374104b9\",\"sent_at\":\"2026-11-02T20:59:51.747Z\"}\n{\"type\":\"log\",\"item_count\":1,\"content_type\":\"application/vnd.sentry.items.log+json\"}\n{\"items\":[{\"timestamp\":1767323045.678,\"trace_id\":\"d15a9cc12d6d24352735a319fd2016d1\",\"event_id\":\"1fd2359e374104b91fd2359e374104b9\",\"level\":\"error\",\"body\":\"MCP mcp:tools/call: echo\",\"attributes\":{\"eventType\":{\"value\":\"mcp:tools/call\",\"type\":\"string\"},\"resourceName\":{\"value\":\"echo\",\"type\":\"string\"},\"serverName\":{\"value\":\"test-server\",\"type\":\"string\"},\"clientName\":{\"value\":\"Claude Desktop\",\"type\":\"string\"},\"sessionId\":{\"value\":\"ses_2pQx7Yk3LmN8vB4cD6fG1hJ9sTa\",\"type\":\"string\"},\"projectId\":{\"value\":\"proj_2pQx7Yk3LmN8vB4cD6fG1hJ9sTp\",\"type\":\"string\"},\"duration_ms\":{\"value\":12,\"type\":\"double\"},\"actorId\":{\"value\":\"usr_1\",\"type\":\"string\"},\"actorName\":{\"value\":\"Ada\",\"type\":\"string\"},\"userIntent\":{\"value\":\"testing exporters\",\"type\":\"string\"},\"serverVersion\":{\"value\":\"1.2.3\",\"type\":\"string\"},\"clientVersion\":{\"value\":\"0.9.0\",\"type\":\"string\"},\"isError\":{\"value\":true,\"type\":\"boolean\"}}}]}\n"
+  },
+  {
+   "url": "https://o1.ingest.sentry.io/api/42/envelope/",
+   "headers": {
+    "X-Sentry-Auth": "Sentry sentry_version=7, sentry_client=agentcat/1.0.0, sentry_key=abc123",
+    "Content-Type": "application/x-sentry-envelope"
+   },
+   "body": "{\"event_id\":\"1fd2359e374104b9ba2e00b18906d4de\",\"sent_at\":\"2026-11-02T20:59:51.749Z\"}\n{\"type\":\"transaction\"}\n{\"type\":\"transaction\",\"event_id\":\"1fd2359e374104b9ba2e00b18906d4de\",\"timestamp\":1767323045.678,\"start_timestamp\":1767323045.666,\"transaction\":\"mcp:tools/call - echo\",\"contexts\":{\"trace\":{\"trace_id\":\"d15a9cc12d6d24352735a319fd2016d1\",\"span_id\":\"1fd2359e374104b9\",\"op\":\"mcp:tools/call\",\"status\":\"internal_error\"},\"agentcat\":{\"agentcat_context_supplied\":true,\"agentcat_via_get_more_tools\":false}},\"tags\":{\"source\":\"agentcat\",\"environment\":\"production\",\"release\":\"1.0.0\",\"event_type\":\"mcp:tools/call\",\"resource\":\"echo\",\"server_name\":\"test-server\",\"client_name\":\"Claude Desktop\",\"actor_id\":\"usr_1\",\"agentcat.env\":\"test\",\"agentcat.Team Name\":\"a,b\"},\"extra\":{\"session_id\":\"ses_2pQx7Yk3LmN8vB4cD6fG1hJ9sTa\",\"project_id\":\"proj_2pQx7Yk3LmN8vB4cD6fG1hJ9sTp\",\"user_intent\":\"testing exporters\",\"actor_name\":\"Ada\",\"server_version\":\"1.2.3\",\"client_version\":\"0.9.0\",\"duration_ms\":12,\"error\":{\"message\":\"boom\",\"type\":\"RuntimeError\",\"stack\":\"a.rb:1\"}}}"
+  },
+  {
+   "url": "https://o1.ingest.sentry.io/api/42/envelope/",
+   "headers": {
+    "X-Sentry-Auth": "Sentry sentry_version=7, sentry_client=agentcat/1.0.0, sentry_key=abc123",
+    "Content-Type": "application/x-sentry-envelope"
+   },
+   "body": "{\"event_id\":\"1fd2359e374104b9c62c1b3558faf080\",\"sent_at\":\"2026-11-02T20:59:51.750Z\"}\n{\"type\":\"event\",\"content_type\":\"application/json\"}\n{\"type\":\"event\",\"event_id\":\"1fd2359e374104b9c62c1b3558faf080\",\"timestamp\":1767323045.678,\"level\":\"error\",\"exception\":{\"values\":[{\"type\":\"RuntimeError\",\"value\":\"boom\",\"mechanism\":{\"type\":\"mcp_tool_call\",\"handled\":false}}]},\"contexts\":{\"trace\":{\"trace_id\":\"d15a9cc12d6d24352735a319fd2016d1\",\"span_id\":\"1fd2359e374104b9\",\"parent_span_id\":\"1fd2359e374104b9\",\"op\":\"mcp:tools/call\"},\"agentcat\":{\"agentcat_context_supplied\":true,\"agentcat_via_get_more_tools\":false},\"mcp\":{\"resource_name\":\"echo\",\"session_id\":\"ses_2pQx7Yk3LmN8vB4cD6fG1hJ9sTa\",\"event_type\":\"mcp:tools/call\",\"user_intent\":\"testing exporters\"}},\"tags\":{\"source\":\"agentcat\",\"environment\":\"production\",\"release\":\"1.0.0\",\"event_type\":\"mcp:tools/call\",\"resource\":\"echo\",\"server_name\":\"test-server\",\"client_name\":\"Claude Desktop\",\"actor_id\":\"usr_1\",\"agentcat.env\":\"test\",\"agentcat.Team Name\":\"a,b\"},\"extra\":{\"session_id\":\"ses_2pQx7Yk3LmN8vB4cD6fG1hJ9sTa\",\"project_id\":\"proj_2pQx7Yk3LmN8vB4cD6fG1hJ9sTp\",\"user_intent\":\"testing exporters\",\"actor_name\":\"Ada\",\"server_version\":\"1.2.3\",\"client_version\":\"0.9.0\",\"duration_ms\":12,\"error\":{\"message\":\"boom\",\"type\":\"RuntimeError\",\"stack\":\"a.rb:1\"}},\"transaction\":\"mcp:tools/call - echo\"}"
+  }
+ ],
+ "sentry_ok": [
+  {
+   "url": "http://localhost:9000/sub/api/7/envelope/",
+   "headers": {
+    "X-Sentry-Auth": "Sentry sentry_version=7, sentry_client=agentcat/1.0.0, sentry_key=abc123",
+    "Content-Type": "application/x-sentry-envelope"
+   },
+   "body": "{\"event_id\":\"1fd2359e374104b91fd2359e374104b9\",\"sent_at\":\"2026-11-02T20:59:51.750Z\"}\n{\"type\":\"log\",\"item_count\":1,\"content_type\":\"application/vnd.sentry.items.log+json\"}\n{\"items\":[{\"timestamp\":1767323045.678,\"trace_id\":\"d15a9cc12d6d24352735a319fd2016d1\",\"event_id\":\"1fd2359e374104b91fd2359e374104b9\",\"level\":\"info\",\"body\":\"MCP mcp:tools/call: echo\",\"attributes\":{\"eventType\":{\"value\":\"mcp:tools/call\",\"type\":\"string\"},\"resourceName\":{\"value\":\"echo\",\"type\":\"string\"},\"serverName\":{\"value\":\"test-server\",\"type\":\"string\"},\"clientName\":{\"value\":\"Claude Desktop\",\"type\":\"string\"},\"sessionId\":{\"value\":\"ses_2pQx7Yk3LmN8vB4cD6fG1hJ9sTa\",\"type\":\"string\"},\"projectId\":{\"value\":\"proj_2pQx7Yk3LmN8vB4cD6fG1hJ9sTp\",\"type\":\"string\"},\"duration_ms\":{\"value\":12,\"type\":\"double\"},\"actorId\":{\"value\":\"usr_1\",\"type\":\"string\"},\"actorName\":{\"value\":\"Ada\",\"type\":\"string\"},\"userIntent\":{\"value\":\"testing exporters\",\"type\":\"string\"},\"serverVersion\":{\"value\":\"1.2.3\",\"type\":\"string\"},\"clientVersion\":{\"value\":\"0.9.0\",\"type\":\"string\"},\"isError\":{\"value\":false,\"type\":\"boolean\"}}}]}\n"
+  }
+ ],
+ "posthog": [
+  {
+   "url": "https://eu.i.posthog.com/batch",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": "{\"api_key\":\"phc_key\",\"batch\":[{\"event\":\"mcp_tool_call\",\"distinct_id\":\"usr_1\",\"properties\":{\"source\":\"agentcat\",\"$session_id\":\"01936dad-e448-715a-9cc1-2d6d24352735\",\"resource_name\":\"echo\",\"tool_name\":\"echo\",\"duration_ms\":12,\"server_name\":\"test-server\",\"server_version\":\"1.2.3\",\"client_name\":\"Claude Desktop\",\"client_version\":\"0.9.0\",\"project_id\":\"proj_2pQx7Yk3LmN8vB4cD6fG1hJ9sTp\",\"user_intent\":\"testing exporters\",\"is_error\":true,\"parameters\":{\"arguments\":{\"msg\":\"hello\"}},\"response\":{\"content\":[{\"type\":\"text\",\"text\":\"hello\"}]},\"$set\":{\"name\":\"Ada\",\"plan\":\"pro\"},\"env\":\"test\",\"Team Name\":\"a,b\",\"agentcat_context_supplied\":true,\"agentcat_via_get_more_tools\":false},\"timestamp\":\"2026-01-02T03:04:05.678Z\",\"type\":\"capture\"},{\"event\":\"$exception\",\"distinct_id\":\"usr_1\",\"properties\":{\"$exception_source\":\"backend\",\"$session_id\":\"01936dad-e448-715a-9cc1-2d6d24352735\",\"$exception_message\":\"boom\",\"$exception_type\":\"RuntimeError\",\"$exception_stacktrace\":\"a.rb:1\",\"resource_name\":\"echo\",\"tool_name\":\"echo\",\"server_name\":\"test-server\",\"server_version\":\"1.2.3\",\"client_name\":\"Claude Desktop\",\"client_version\":\"0.9.0\"},\"timestamp\":\"2026-01-02T03:04:05.678Z\",\"type\":\"capture\"},{\"event\":\"$ai_span\",\"distinct_id\":\"usr_1\",\"properties\":{\"$ai_trace_id\":\"01936dad-e448-715a-9cc1-2d6d24352735\",\"$ai_span_id\":\"01936dad-e448-7fd2-b59e-374104b95fa0\",\"$ai_span_name\":\"echo\",\"$ai_is_error\":true,\"source\":\"agentcat\",\"$ai_session_id\":\"agentcat_ses_2pQx7Yk3LmN8vB4cD6fG1hJ9sTa\",\"$session_id\":\"01936dad-e448-715a-9cc1-2d6d24352735\",\"$ai_latency\":0.012,\"$ai_error\":{\"message\":\"boom\",\"type\":\"RuntimeError\",\"stack\":\"a.rb:1\"},\"$ai_input_state\":{\"arguments\":{\"msg\":\"hello\"}},\"$ai_output_state\":{\"content\":[{\"type\":\"text\",\"text\":\"hello\"}]},\"server_name\":\"test-server\",\"client_name\":\"Claude Desktop\",\"env\":\"test\",\"Team Name\":\"a,b\",\"agentcat_context_supplied\":true,\"agentcat_via_get_more_tools\":false},\"timestamp\":\"2026-01-02T03:04:05.678Z\",\"type\":\"capture\"}]}"
+  }
+ ]
+}

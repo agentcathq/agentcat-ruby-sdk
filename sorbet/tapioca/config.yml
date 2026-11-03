@@ -1,0 +1,23 @@
+gem:
+  # Add your `gem` command parameters here:
+  #
+  # doc: true
+  # workers: 5
+  exclude:
+    # As of this gem's current release, regenerating this picks up top-level
+    # `Prism.dump`/`lex`/`parse`/etc. mirror methods via plain reflection with a loose
+    # splat signature, which conflicts with the gem's own exported `rbi/prism.rbi`
+    # (same methods, real keyword-arg signatures) wherever Sorbet also loads that file
+    # directly — https://srb.help/4010. The committed sorbet/rbi/gems/prism@*.rbi is
+    # therefore maintained by hand: it's the last known-good generation, predating
+    # that duplication, kept because `rbi`/`rbs` (tapioca's own deps) reference
+    # Prism::Node/Visitor types. Don't `tapioca gem prism` to "freshen" it — if prism's
+    # version bumps and the file genuinely needs updating, regenerate, then manually
+    # drop any newly (re)introduced `Mirror the Prism.X API` methods before committing.
+    - prism
+dsl:
+  # Add your `dsl` command parameters here:
+  #
+  # exclude:
+  # - SomeGeneratorName
+  # workers: 5
