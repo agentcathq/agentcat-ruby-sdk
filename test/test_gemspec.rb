@@ -8,8 +8,8 @@ class GemspecTest < Minitest::Test
     @spec ||= Gem::Specification.load(File.expand_path("../agentcat.gemspec", __dir__))
   end
 
-  def test_links_point_at_the_agentcathq_repository
-    assert_equal REPO, spec.homepage
+  def test_links_point_at_agentcat_and_the_agentcathq_repository
+    assert_equal "https://agentcat.com", spec.homepage
     assert_equal REPO, spec.metadata["source_code_uri"]
     assert_equal "#{REPO}/blob/main/CHANGELOG.md", spec.metadata["changelog_uri"]
     assert_equal "#{REPO}/issues", spec.metadata["bug_tracker_uri"]
