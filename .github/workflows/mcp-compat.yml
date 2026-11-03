@@ -6,18 +6,35 @@ name: mcp compat
 # 1.8.x is 1.8.2, so 1.8.0 and 1.8.1 are not tested). The floor is the `mcp` runtime
 # dependency in agentcat.gemspec, and nowhere else: to raise it, change that one line.
 # A new `mcp` release joins the matrix on the next run. When it breaks AgentCat, the job
-# for that version fails and its name shows the version; a nightly failure also opens
-# (or comments on) a GitHub issue that names the failing versions.
+# for that version fails and its name shows the version; a failure of the nightly run
+# (daily at 02:00 UTC) also opens (or comments on) a GitHub issue that names the failing
+# versions.
 #
 # GitHub runs a `schedule` trigger only from the default branch, so the nightly run starts
 # once this workflow is on `main`.
+#
+# A pull request runs this workflow only when it changes SDK code: the library, the gem
+# manifests and lock, the unit tests and fixtures, the Rakefile, the scripts the jobs or
+# tests load, or this file. A docs-only PR skips it; ci.yml still runs the unit suite on
+# every PR. No check of this workflow is a required status check, so a skip blocks nothing.
 
 on:
   pull_request:
+    paths:
+      - "lib/**"
+      - "agentcat.gemspec"
+      - "Gemfile"
+      - "Gemfile.lock"
+      - "Rakefile"
+      - "test/**"
+      - "!test/e2e/**"
+      - "scripts/mcp_versions.rb"
+      - "scripts/release.rb"
+      - ".github/workflows/mcp-compat.yml"
   push:
     branches: [main]
   schedule:
-    - cron: "23 4 * * *" # nightly
+    - cron: "0 2 * * *" # nightly, 02:00 UTC
   workflow_dispatch:
 
 permissions:
