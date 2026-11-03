@@ -3,12 +3,11 @@ require_relative "lib/agentcat/version"
 Gem::Specification.new do |s|
   s.name = "agentcat"
   s.version = AgentCat::VERSION
-  s.summary = "AgentCat Ruby SDK for MCP servers"
-  s.description = "Instruments MCP::Server tools with AgentCat session tracking, intent capture and event reporting."
-  s.authors = ["AgentCat"]
+  s.summary = "Analytics tool for MCP (Model Context Protocol) servers, Claude Connectors, and ChatGPT Plugins"
+  s.description = "AgentCat is an analytics platform for MCP server owners. It tracks tool usage patterns of the MCP servers built on the official mcp gem and provides insights."
+  s.authors = ["AgentCat, Inc."]
   s.license = "MIT"
-  # The repository moves to agentcathq later; these links resolve once it has.
-  s.homepage = "https://github.com/agentcathq/agentcat-ruby-sdk"
+  s.homepage = "https://agentcat.com"
   s.metadata = {
     "homepage_uri" => s.homepage,
     "source_code_uri" => "https://github.com/agentcathq/agentcat-ruby-sdk",
