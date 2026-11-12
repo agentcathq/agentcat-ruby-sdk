@@ -195,9 +195,9 @@ module AgentCat
 
       sig { params(name: String).returns(T.untyped) }
       def resolve(name)
-        # `mcp` autoloads MCP::Server, and only mcp/server.rb requires mcp/server_context:
-        # MCP::ServerContext has no autoload of its own. Load the server first, so that a
-        # probe does not depend on what the process happened to load before it.
+        # Older `mcp` releases autoload MCP::Server but not MCP::ServerContext.
+        # Load the server first, so that a probe does not depend on what the process
+        # happened to load before it.
         Object.const_get("MCP::Server") if name.start_with?("MCP::")
         Object.const_get(name)
       rescue NameError, LoadError
