@@ -18,14 +18,16 @@ class PrivateMembersTest < Minitest::Test
     end
   end
 
-  # MCP::ServerContext has no autoload: only mcp/server.rb loads it. In a fresh process
-  # where nothing touched MCP::Server yet, the probe must still find it, whatever
-  # order the tests run in.
+  # Older mcp releases load ServerContext only through Server. Newer releases
+  # register an autoload, which const_defined? also reports as defined.
+  # The probe must resolve the context before either class has loaded.
   def test_probes_server_context_in_a_process_that_has_not_loaded_mcp_server
     script = <<~RUBY
       require "mcp"
       require "agentcat"
-      abort "MCP::ServerContext is already loaded" if MCP.const_defined?(:ServerContext, false)
+      %i[Server ServerContext].each do |name|
+        abort "MCP::\#{name} is already loaded" if MCP.const_defined?(name, false) && !MCP.autoload?(name)
+      end
       members = AgentCat::PrivateMembers
       puts [members::SERVER_CONTEXT_NOTIFICATION_TARGET, members::SERVER_CONTEXT_RELATED_REQUEST_ID].map { |m| members.probe(m) }.inspect
     RUBY
