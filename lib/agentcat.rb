@@ -36,6 +36,7 @@ require_relative "agentcat/exporters"
 require_relative "agentcat/event_pipeline"
 require_relative "agentcat/fork_safety"
 require_relative "agentcat/custom_event"
+require_relative "agentcat/server_info"
 require_relative "agentcat/interceptor"
 require_relative "agentcat/tracker"
 
@@ -181,6 +182,7 @@ module AgentCat
       Diagnostics.reset!
       Log.reset!
       PrivateMembers.reset!
+      ServerInfo.reset!
       @event_queue_mutex.synchronize do
         @event_queue_epoch += 1
         @event_queue&.shutdown

@@ -13,6 +13,7 @@ require_relative "tags"
 require_relative "tool_call"
 require_relative "version"
 require_relative "private_members"
+require_relative "server_info"
 
 module AgentCat
   # The per-tool call pipeline that Tracker installs on every ToolHandle:
@@ -63,6 +64,7 @@ module AgentCat
     sig { params(arguments: T.nilable(T::Hash[T.untyped, T.untyped]), server_context: T.untyped, original: T.untyped).returns(T.untyped).checked(:tests) }
     def call(arguments, server_context, original)
       Thread.current[RAN_KEY] = true
+      ServerInfo.check(@tracker, (@tool_name == Tracker::GET_MORE_TOOLS) ? :get_more_tools : :tool_call, server_context)
       args = (arguments || {}).transform_keys(&:to_s)
       # Tracing off: just keep our injected params (context, if that's still on) away from
       # the handler. No identify, no session, no mint-back, no event.

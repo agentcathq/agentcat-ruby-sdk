@@ -47,7 +47,8 @@ module AgentCat
       request_headers: "HTTP headers and URL in events",
       request_id: "requestId in events",
       legacy_client_info: "the client name and version in events",
-      rejected_calls: "events for calls the mcp gem rejects (unknown tool, invalid arguments)"
+      rejected_calls: "events for calls the mcp gem rejects (unknown tool, invalid arguments)",
+      server_info: "the server info heartbeat (what the server lists to agents)"
     }.freeze, T::Hash[Symbol, String])
 
     # `MCP::Server#tools` is public, but AgentCat replaces its entries in place with
@@ -72,6 +73,9 @@ module AgentCat
     # The session, for its clientInfo on gems without `ServerContext#client_info`
     # (interceptor.rb, `legacy_session_client`).
     SERVER_CONTEXT_NOTIFICATION_TARGET = Member.new(owner: "MCP::ServerContext", name: "@notification_target", kind: :ivar, feature: :legacy_client_info)
+    # The request handlers by method name. The list handlers in it are private methods of
+    # the server; the heartbeat calls them as a list request would (server_info.rb).
+    SERVER_HANDLERS = Member.new(owner: "MCP::Server", name: "@handlers", kind: :ivar, feature: :server_info)
 
     ALL = T.let([
       SERVER_TOOLS,
@@ -82,7 +86,8 @@ module AgentCat
       INPUT_SCHEMA_VALIDATE_ARGUMENTS,
       STREAMABLE_HTTP_TRANSPORT_CALL,
       SERVER_CONTEXT_RELATED_REQUEST_ID,
-      SERVER_CONTEXT_NOTIFICATION_TARGET
+      SERVER_CONTEXT_NOTIFICATION_TARGET,
+      SERVER_HANDLERS
     ].freeze, T::Array[Member])
 
     @mutex = T.let(Mutex.new, Mutex)
@@ -170,6 +175,7 @@ module AgentCat
 
         case member
         when SERVER_TOOLS then server_tools_hash?(owner)
+        when SERVER_HANDLERS then server_list_handlers?(owner)
         when SERVER_HANDLE, SERVER_HANDLE_JSON then public_method?(owner, member.name)
         when INPUT_SCHEMA_MISSING_REQUIRED_ARGUMENTS then soft_missing_required?(owner)
         when INPUT_SCHEMA_VALIDATE_ARGUMENTS then soft_validate?(owner)
@@ -207,6 +213,15 @@ module AgentCat
       sig { params(server_class: T.untyped).returns(T::Boolean) }
       def server_tools_hash?(server_class)
         server_class.new(name: "agentcat_probe").tools.is_a?(Hash)
+      end
+
+      # Every list request has a callable handler under its method name.
+      sig { params(server_class: T.untyped).returns(T::Boolean) }
+      def server_list_handlers?(server_class)
+        handlers = server_class.new(name: "agentcat_probe").instance_variable_get(SERVER_HANDLERS.name.to_sym)
+        return false unless handlers.is_a?(Hash)
+
+        %w[tools/list resources/list resources/templates/list prompts/list].all? { |method| handlers[method].respond_to?(:call) }
       end
 
       # A method the class itself defines (a prepended module of ours doesn't count),

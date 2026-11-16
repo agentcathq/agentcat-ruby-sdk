@@ -22,6 +22,7 @@ T.unsafe(T::Private).const_get(:RuntimeLevels).enable_checking_in_tests
 
 require "minitest/autorun"
 require "stringio"
+require "json"
 
 # Minitest is loaded, so AgentCat's test mode would turn the SDK off here like it does in
 # a customer's suite. The suite tests the real path, so force it on. Test mode
@@ -53,11 +54,59 @@ class RecordingClient
   end
 end
 
+# In-memory replacement for the server info sender: records each body and answers with
+# the next of `statuses` (the last one repeats). Nothing leaves the process.
+class ServerInfoRecorder
+  def initialize(statuses = [202])
+    @statuses = statuses.dup
+    @bodies = []
+    @mutex = Mutex.new
+  end
+
+  def bodies
+    @mutex.synchronize { @bodies.dup }
+  end
+
+  def post_server_info(body)
+    @mutex.synchronize do
+      @bodies << JSON.parse(JSON.generate(body))
+      (@statuses.size > 1) ? @statuses.shift : @statuses.first
+    end
+  end
+end
+
+# Every test starts with a recorder in place of the real sender, so no heartbeat reaches
+# the network, whatever client a test tracks its server with.
+AgentCat::ServerInfo.sender = ServerInfoRecorder.new
+
 module AgentCatTestHelpers
   ECHO_SCHEMA = {type: "object", properties: {msg: {type: "string"}}, required: ["msg"]}.freeze
 
   def setup
     AgentCat.reset!
+    AgentCat::ServerInfo.sender = ServerInfoRecorder.new
+  end
+
+  def server_info_bodies
+    wait_for_server_info
+    AgentCat::ServerInfo.sender.bodies
+  end
+
+  # Joins every heartbeat thread still running, so a test reads the recorder after the work.
+  def wait_for_server_info(timeout: 5)
+    Thread.list.select { |thread| thread.name == AgentCat::ServerInfo::THREAD_NAME }.each { |thread| thread.join(timeout) }
+  end
+
+  # A sender that cannot send: the heartbeat stops before it calls a list handler or a
+  # hook, for a test that counts the calls of a customer hook.
+  def turn_off_server_info
+    AgentCat::ServerInfo.sender = Object.new
+  end
+
+  # Moves the first check of this memory `seconds` into the past, as in a process that
+  # has run for that long.
+  def age_server_info_memory(seconds = 60)
+    AgentCat::ServerInfo.instance_variable_set(:@first_check_at, AgentCat::ServerInfo.now - seconds)
   end
 
   def echo_tool(name: "echo", description: "Echo a message", input_schema: ECHO_SCHEMA, **definition, &block)

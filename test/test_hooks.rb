@@ -3,6 +3,13 @@ require_relative "test_helper"
 class HooksTest < Minitest::Test
   include AgentCatTestHelpers
 
+  # These tests count and order the calls of the hooks; the server info heartbeat calls
+  # `redact_sensitive_information` too, from a thread of its own.
+  def setup
+    super
+    turn_off_server_info
+  end
+
   # --- hook_timeout option ---
 
   def test_hook_timeout_defaults_to_one_second

@@ -71,6 +71,41 @@ module AgentCat
         tools_hash&.[](name)
       end
 
+      sig { params(block: T.proc.void).void }
+      def on_tools_list(&block)
+        @on_tools_list = T.let(block, T.nilable(T.proc.void))
+      end
+
+      # The gem's own handler from `@handlers`, called the way its dispatch calls it: with
+      # `server_context:` only when the handler declares that keyword. nil when the
+      # server's capabilities turn the request away, as the gem does over the wire.
+      sig { params(method: String).returns(T.untyped) }
+      def list_handler(method)
+        member = AgentCat::PrivateMembers::SERVER_HANDLERS
+        return nil unless AgentCat::PrivateMembers.enabled?(member.feature)
+        return nil unless answers?(method)
+
+        handlers = @server.instance_variable_get(member.name.to_sym)
+        handler = handlers.is_a?(Hash) ? handlers[method] : nil
+        return nil unless handler.respond_to?(:call)
+
+        if declares_server_context?(handler)
+          ->(params, server_context) { handler.call(params, server_context: server_context) }
+        else
+          ->(params, _server_context) { handler.call(params) }
+        end
+      end
+
+      sig { returns(String) }
+      def server_title
+        @server.title.to_s
+      end
+
+      sig { returns(String) }
+      def instructions
+        @server.instructions.to_s
+      end
+
       # A `tools/list` always needs a fresh sync, so a tool registered since the last one is
       # listed with AgentCat's parameters. A `tools/call` only needs one when it names a tool
       # this adapter hasn't wrapped yet — the case a server's `install!` ran on but that
@@ -143,13 +178,47 @@ module AgentCat
         # loaded when `track` ran, this installs the request-header hook the first time a
         # request reaches the server, so a later `require` doesn't silently cost headers.
         AgentCat::RequestContext.install!
-        sync.call if needs_sync?(request)
+        parsed = parse_request(request)
+        sync.call if needs_sync?(parsed)
+        @on_tools_list&.call if request_method(parsed) == "tools/list"
       rescue => e
         AgentCat::Log.warn("AgentCat could not instrument new tools before a request: #{e.class}")
         AgentCat.logger.debug { "before_request failed: #{e.class}: #{e.message}" }
       end
 
       private
+
+      # The request as a Hash: `handle` gets one, `handle_json` a JSON string. nil when it
+      # is neither.
+      sig { params(request: T.untyped).returns(T.untyped) }
+      def parse_request(request)
+        parsed = request.is_a?(String) ? JSON.parse(request) : request
+        parsed.is_a?(Hash) ? parsed : nil
+      rescue JSON::ParserError, TypeError
+        nil
+      end
+
+      sig { params(parsed: T.untyped).returns(T.untyped) }
+      def request_method(parsed)
+        parsed.is_a?(Hash) ? (parsed[:method] || parsed["method"]) : nil
+      end
+
+      sig { params(method: String).returns(T::Boolean) }
+      def answers?(method)
+        ::MCP::Methods.ensure_capability!(method, @server.capabilities)
+        true
+      # MissingRequiredCapabilityError, or capabilities the gem itself cannot read.
+      rescue
+        false
+      end
+
+      # Same rule as the gem's `handler_declares_server_context?`.
+      sig { params(handler: T.untyped).returns(T::Boolean) }
+      def declares_server_context?(handler)
+        return false unless handler.respond_to?(:parameters)
+
+        handler.parameters.any? { |type, name| name == :server_context && (type == :key || type == :keyreq) }
+      end
 
       sig { params(name: String).returns(T.nilable(AgentCat::ToolHandle)) }
       def wrap(name)

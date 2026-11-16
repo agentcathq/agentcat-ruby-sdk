@@ -1,6 +1,7 @@
 # typed: true
 
 require_relative "interceptor"
+require_relative "server_info"
 require_relative "schema/prompts"
 
 module AgentCat
@@ -43,6 +44,7 @@ module AgentCat
       end
       sync!
       adapter.before_dispatch { sync! }
+      adapter.on_tools_list { ServerInfo.check(self, :tools_list) }
       adapter.watch_rejected_calls
       self
     end
@@ -92,19 +94,20 @@ module AgentCat
       @interceptors_mutex.synchronize { @interceptors[tool] }
     end
 
-    private
-
     # Instruments every tool the adapter currently knows about. `instrument` is a no-op on
     # a handle it has already wrapped, so calling this again after the host registers more
-    # tools only picks up the new ones. Run once at `install!` time and again right before
+    # tools only picks up the new ones. Run once at `install!` time, again right before
     # any request that needs it (`adapter.before_dispatch`), so a tool the host defines
     # after `track()` is instrumented by the time an agent discovers or calls it — even on
     # a server instance built fresh per request, whose first request is a direct
-    # `tools/call` with no `tools/list` before it.
+    # `tools/call` with no `tools/list` before it — and before the server info heartbeat
+    # lists the tools.
     sig { void }
     def sync!
       adapter.tool_handles.each { |handle| instrument(handle) }
     end
+
+    private
 
     sig { params(handle: AgentCat::ToolHandle).void }
     def instrument(handle)

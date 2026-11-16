@@ -5,6 +5,13 @@ require_relative "test_helper"
 class HookWorkerTest < Minitest::Test
   include AgentCatTestHelpers
 
+  # These tests count and order the calls of the hooks; the server info heartbeat calls
+  # `redact_sensitive_information` too, from a thread of its own.
+  def setup
+    super
+    turn_off_server_info
+  end
+
   def test_returns_the_hooks_value
     worker = AgentCat::Hooks::Worker.new(->(text) { text.upcase }, timeout: 1)
 
