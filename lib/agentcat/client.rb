@@ -138,16 +138,14 @@ module AgentCat
         nil
       end
 
-      # Publishes the server info heartbeat, with the base URL and headers of the events
-      # and a fixed 10 s read timeout. Never raises and logs at debug only; returns the
-      # HTTP status of the answer, or nil when no answer came.
+      # Publishes the server info heartbeat to the base URL of the events, with no
+      # `Authorization` header and a fixed 10 s read timeout. Never raises and logs at
+      # debug only; returns the HTTP status of the answer, or nil when no answer came.
       sig { params(body: T::Hash[Symbol, T.untyped]).returns(T.nilable(Integer)) }
       def post_server_info(body)
         request = AgentCatApi::PublishServerInfoRequest.new(body)
-        headers = {}
-        headers["Authorization"] = "Bearer #{api_key}" if api_key
         api = AgentCatApi::ServerInfoApi.new(AgentCatApi::ApiClient.new(configuration(read_timeout: DEFAULT_READ_TIMEOUT_SECONDS.to_f)))
-        _data, status, _headers = api.publish_server_info_with_http_info(publish_server_info_request: request, header_params: headers, debug_auth_names: [])
+        _data, status, _headers = api.publish_server_info_with_http_info(publish_server_info_request: request, debug_auth_names: [])
         status
       rescue AgentCatApi::ApiError => e
         AgentCat.logger.debug { "failed to publish server info: #{e.class} (HTTP #{e.code.inspect})" }
