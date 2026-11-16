@@ -83,7 +83,7 @@ module AgentCat
       hook = options.redact_sensitive_information
       return fields unless hook
 
-      worker = Hooks::Worker.new(hook, timeout: options.hook_timeout)
+      worker = Hooks::Worker.new(guard_server_info_hook(hook), timeout: options.hook_timeout)
       redacter = ->(value) do
         raise StringRedactionFailed if Clock.monotonic_now > deadline
 
@@ -102,6 +102,26 @@ module AgentCat
     ensure
       worker&.close
     end
+
+    # Raised in place of any error of the hook while it redacts server info. Its message is
+    # fixed: the hook's own message can quote the text it was redacting.
+    class ServerInfoHookFailed < StandardError
+      def initialize
+        super("redact_sensitive_information failed")
+      end
+    end
+
+    # The hook, with every Exception it raises turned into one ServerInfoHookFailed, so no
+    # error that is not a StandardError leaves the worker thread.
+    sig { params(hook: T.untyped).returns(T.proc.params(text: String).returns(T.untyped)) }
+    def self.guard_server_info_hook(hook)
+      lambda do |text|
+        hook.call(text)
+      rescue Exception # standard:disable Lint/RescueException
+        raise ServerInfoHookFailed.new, cause: nil
+      end
+    end
+    private_class_method :guard_server_info_hook
 
     sig { params(item: T.untyped, block: T.proc.params(arg: String).returns(String)).returns(T.untyped) }
     def self.redact_list_item(item, &block)
