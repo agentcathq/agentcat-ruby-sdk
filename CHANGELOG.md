@@ -7,6 +7,10 @@ and this project follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Server info: about once an hour, the SDK reads the server's own tool, resource, resource template and prompt lists, its title and its instructions, runs `redact_sensitive_information` on their text and sends them to AgentCat in the background. Requires `agentcat-api` 0.0.4.
+
 ## [1.0.0] - 2026-11-03
 
 The first stable release of the SDK. From this release on, the public API
