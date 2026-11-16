@@ -1,4 +1,5 @@
 require_relative "test_helper"
+require "minitest/mock"
 require "json"
 require "socket"
 require "timeout"
@@ -221,9 +222,14 @@ class ClientTest < Minitest::Test
     assert_equal "hello", texts_of(tool_result(server, "echo", {msg: "hello"})).last
   end
 
+  # The variable is unset for this thread only: a delivery still running on another
+  # thread keeps reading the closed port of the suite, never the default URL.
   def test_configuration_uses_the_default_base_url
-    ENV.delete("AGENTCAT_API_URL")
-    config = AgentCat::Client.configuration
+    test_thread = Thread.current
+    read_env = ENV.method(:[])
+    config = ENV.stub(:[], ->(key) { (Thread.current == test_thread && key == "AGENTCAT_API_URL") ? nil : read_env.call(key) }) do
+      AgentCat::Client.configuration
+    end
 
     assert_equal "https", config.scheme
     assert_equal "api.agentcat.com", config.host
