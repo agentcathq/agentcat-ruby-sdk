@@ -12,6 +12,11 @@ class HookWorkerTest < Minitest::Test
     turn_off_server_info
   end
 
+  def teardown
+    restore_server_info
+    super
+  end
+
   def test_returns_the_hooks_value
     worker = AgentCat::Hooks::Worker.new(->(text) { text.upcase }, timeout: 1)
 

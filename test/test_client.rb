@@ -18,7 +18,7 @@ class ClientTest < Minitest::Test
   end
 
   def teardown
-    ENV.delete("AGENTCAT_API_URL")
+    ENV["AGENTCAT_API_URL"] = CLOSED_API_URL
     ENV.delete("AGENTCAT_API_KEY")
     AgentCat::Client.reset_base_url!
     @thread.kill

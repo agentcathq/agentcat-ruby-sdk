@@ -69,7 +69,6 @@ class ServerInfoTest < Minitest::Test
     JSON.parse(JSON.generate(value))
   end
 
-  # V16
   def test_v16_the_global_test_setup_replaces_the_sender_so_no_heartbeat_reaches_the_network
     assert_instance_of ServerInfoRecorder, AgentCat::ServerInfo.sender
 
@@ -82,7 +81,6 @@ class ServerInfoTest < Minitest::Test
     assert_equal 1, server_info_bodies.size
   end
 
-  # V1
   def test_v1_one_tool_call_sends_the_whole_server_info
     server = demo_server
     track_demo(server)
@@ -116,7 +114,6 @@ class ServerInfoTest < Minitest::Test
     assert_equal [{"name" => "topic", "required" => true}], features["prompts"].first["arguments"]
   end
 
-  # V2
   def test_v2_every_page_of_the_tool_list_is_read
     tools = (1..5).map { |n| echo_tool(name: "tool#{n}") }
     server = demo_server(tools: tools, page_size: 2)
@@ -129,7 +126,6 @@ class ServerInfoTest < Minitest::Test
     assert_equal 1, tools.count { |tool| tool["name"] == "get_more_tools" }
   end
 
-  # V3
   def test_v3_a_server_with_tools_only_sends_the_tool_list_only
     server = demo_server(capabilities: {tools: {listChanged: true}})
     track_demo(server)
@@ -139,7 +135,6 @@ class ServerInfoTest < Minitest::Test
     assert_equal ["tools"], server_info_bodies.first["features"].keys
   end
 
-  # V4
   def test_v4_a_failed_prompt_list_is_left_out
     server = demo_server
     track_demo(server)
@@ -153,7 +148,6 @@ class ServerInfoTest < Minitest::Test
     assert_equal %w[alpha beta gamma get_more_tools], bodies.first["features"]["tools"].map { |tool| tool["name"] }
   end
 
-  # V5
   def test_v5_a_failed_tool_list_sends_nothing
     server = demo_server
     track_demo(server)
@@ -165,7 +159,6 @@ class ServerInfoTest < Minitest::Test
     assert_equal 0, server_info_bodies.size
   end
 
-  # V6
   def test_v6_a_list_that_repeats_its_cursor_fails_quickly
     server = demo_server
     track_demo(server)
@@ -191,7 +184,6 @@ class ServerInfoTest < Minitest::Test
     assert_equal 100, calls
   end
 
-  # V15
   def test_v15_the_heartbeat_names_the_server_as_its_events_do
     server = demo_server
     client = track_demo(server)
@@ -205,7 +197,6 @@ class ServerInfoTest < Minitest::Test
     assert_equal client.last_event[:server_version], body["server_version"]
   end
 
-  # V11
   def test_v11_the_redaction_function_runs_on_the_text_but_not_on_the_names
     tool = MCP::Tool.define(
       name: "secret_tool",
@@ -236,7 +227,6 @@ class ServerInfoTest < Minitest::Test
     assert_equal "a [x] file", resource["description"]
   end
 
-  # V12
   def test_v12_a_failing_redaction_function_sends_nothing
     server = demo_server
     track_demo(server, redact_sensitive_information: ->(_text) { raise "redaction is down" })
@@ -263,7 +253,6 @@ class ServerInfoTest < Minitest::Test
     assert_equal fields, AgentCat::Redaction.apply_server_info_redaction(fields, options, deadline: AgentCat::Clock.monotonic_now + 30)
   end
 
-  # V7
   def test_v7_one_heartbeat_an_hour
     server = demo_server
     track_demo(server)
@@ -284,7 +273,6 @@ class ServerInfoTest < Minitest::Test
     end
   end
 
-  # V8
   def test_v8_two_servers_with_one_name_share_the_hour
     first = demo_server
     second = demo_server
@@ -309,7 +297,6 @@ class ServerInfoTest < Minitest::Test
     assert_equal %w[demo-server other-server], server_info_bodies.map { |body| body["server_name"] }.sort
   end
 
-  # V9
   def test_v9_no_heartbeat_without_a_project_id
     ["", nil].each do |project_id|
       server = demo_server
@@ -342,9 +329,9 @@ class ServerInfoTest < Minitest::Test
     assert_equal 0, server_info_bodies.size
   end
 
-  # V10: every failure stays inside the SDK. Each case runs with a logger on standard
-  # error and with `Thread.abort_on_exception`, so an error that leaves a thread fails
-  # the test, and so does any output.
+  # Every failure stays inside the SDK. Each case runs with a logger on standard error
+  # and with `Thread.abort_on_exception`, so an error that leaves a thread fails the
+  # test, and so does any output.
   def assert_quiet_and_unharmed(server, request: :tool_call)
     previous_abort = Thread.abort_on_exception
     previous_logger = AgentCat.logger
@@ -369,15 +356,15 @@ class ServerInfoTest < Minitest::Test
     gate = Queue.new
     sender = Object.new
     sender.define_singleton_method(:post_server_info) { |_body| gate.pop }
-    AgentCat::ServerInfo.sender = sender
-    server = demo_server
-    track_demo(server)
-    age_server_info_memory
+    with_server_info_sender(sender) do
+      server = demo_server
+      track_demo(server)
+      age_server_info_memory
 
-    assert_quiet_and_unharmed(server)
-  ensure
-    gate&.close
-    wait_for_server_info
+      assert_quiet_and_unharmed(server)
+    ensure
+      gate.close
+    end
   end
 
   def test_v10_a_failing_list_handler_does_not_reach_the_call
@@ -416,29 +403,47 @@ class ServerInfoTest < Minitest::Test
   end
 
   def test_v10_an_api_error_is_not_sent_again
-    AgentCat::ServerInfo.sender = ServerInfoRecorder.new([500])
-    server = demo_server
-    track_demo(server)
-    age_server_info_memory
+    with_server_info_sender(ServerInfoRecorder.new([500])) do
+      server = demo_server
+      track_demo(server)
+      age_server_info_memory
 
-    assert_quiet_and_unharmed(server) { wait_for_server_info }
-    call_alpha(server)
-    request_tools_list(server)
+      assert_quiet_and_unharmed(server) { wait_for_server_info }
+      call_alpha(server)
+      request_tools_list(server)
 
-    assert_equal 1, server_info_bodies.size
+      assert_equal 1, server_info_bodies.size
+    end
   end
 
   def test_v10_a_sender_that_raises_does_not_reach_the_request
     sender = Object.new
     sender.define_singleton_method(:post_server_info) { |_body| raise "network is down" }
-    AgentCat::ServerInfo.sender = sender
-    server = demo_server
-    track_demo(server)
+    with_server_info_sender(sender) do
+      server = demo_server
+      track_demo(server)
 
-    assert_quiet_and_unharmed(server, request: :tools_list) { wait_for_server_info }
+      assert_quiet_and_unharmed(server, request: :tools_list) { wait_for_server_info }
+    end
   end
 
-  # V17
+  # The hook's error is not a StandardError, and its message quotes the text it was
+  # given. Neither the error nor the text may leave the SDK.
+  def test_v10_a_redaction_function_that_raises_a_non_standard_error_does_not_reach_the_call
+    hook_error = Class.new(Exception) # standard:disable Lint/InheritException
+    server = demo_server
+    track_demo(server, redact_sensitive_information: ->(text) { (text == "Use the demo tools.") ? raise(hook_error, "cannot redact: #{text}") : text })
+    age_server_info_memory
+
+    log = capture_log do
+      assert_quiet_and_unharmed(server) { wait_for_server_info }
+    end
+
+    assert_equal 0, server_info_bodies.size
+    refute_includes log, "Use the demo tools."
+    refute_includes log, "cannot redact"
+  end
+
   def test_v17_a_new_memory_sends_for_a_tool_list_and_a_feedback_note_only
     server = demo_server
     track_demo(server)
@@ -454,7 +459,6 @@ class ServerInfoTest < Minitest::Test
     assert_equal 2, server_info_bodies.size
   end
 
-  # V18
   def test_v18_with_no_memory_between_requests_each_tool_list_sends
     server = demo_server
     track_demo(server)
@@ -469,7 +473,6 @@ class ServerInfoTest < Minitest::Test
     assert_equal 3, server_info_bodies.size
   end
 
-  # V19
   def test_v19_a_tool_call_sends_once_the_memory_is_60_seconds_old
     server = demo_server
     track_demo(server)
@@ -501,14 +504,14 @@ class ServerInfoTest < Minitest::Test
     assert_equal 1, server_info_bodies.size
   end
 
-  # V13
   def test_v13_a_413_sends_once_more_without_the_schemas
-    AgentCat::ServerInfo.sender = ServerInfoRecorder.new([413, 202])
-    server = demo_server
-    track_demo(server)
+    first, second = with_server_info_sender(ServerInfoRecorder.new([413, 202])) do
+      server = demo_server
+      track_demo(server)
 
-    request_tools_list(server)
-    first, second = server_info_bodies
+      request_tools_list(server)
+      server_info_bodies
+    end
 
     refute_nil second
     assert first["features"]["tools"].all? { |tool| tool.key?("inputSchema") }
@@ -523,16 +526,17 @@ class ServerInfoTest < Minitest::Test
   end
 
   def test_v13_a_second_413_ends_the_attempt
-    AgentCat::ServerInfo.sender = ServerInfoRecorder.new([413])
-    server = demo_server
-    track_demo(server)
+    with_server_info_sender(ServerInfoRecorder.new([413])) do
+      server = demo_server
+      track_demo(server)
 
-    request_tools_list(server)
+      request_tools_list(server)
 
-    assert_equal 2, server_info_bodies.size
+      assert_equal 2, server_info_bodies.size
+    end
   end
 
-  # V14, and the real client against a local API.
+  # The real client against a local API.
   class LocalApi
     attr_reader :requests
 
@@ -570,11 +574,14 @@ class ServerInfoTest < Minitest::Test
     end
   end
 
+  # The heartbeat uses the tracked server's client here. Every heartbeat thread ends
+  # before the base URL is reset and the recorder comes back, so none can send to
+  # another URL after the test.
   def with_local_api(status)
     api = LocalApi.new(status)
-    AgentCat::ServerInfo.sender = nil
-    yield api
+    with_server_info_sender(nil) { yield api }
   ensure
+    wait_for_server_info(timeout: nil)
     api&.close
     AgentCat::Client.reset_base_url!
   end
@@ -605,13 +612,13 @@ class ServerInfoTest < Minitest::Test
     end
   end
 
-  def test_the_client_sends_the_api_key_of_the_events
+  def test_the_heartbeat_carries_no_authorization_header_also_with_an_api_key
     ENV["AGENTCAT_API_KEY"] = "test-key"
     with_local_api(202) do |api|
       AgentCat::Client.configure_base_url(api.url)
 
       assert_equal 202, AgentCat::Client.post_server_info({project_id: PROJECT_ID, server_name: "s", features: {}})
-      assert_equal "Bearer test-key", api.requests.pop(timeout: 5)[:headers]["authorization"]
+      refute api.requests.pop(timeout: 5)[:headers].key?("authorization")
     end
   ensure
     ENV.delete("AGENTCAT_API_KEY")
@@ -629,15 +636,73 @@ class ServerInfoTest < Minitest::Test
   end
 
   def test_a_custom_client_without_server_info_support_sends_nothing
-    AgentCat::ServerInfo.sender = nil
+    with_server_info_sender(nil) do
+      server = demo_server
+      client = track_demo(server)
+
+      request_tools_list(server)
+      wait_for_server_info
+
+      refute_respond_to client, :post_server_info
+      assert_equal 0, client.events.size
+    end
+  end
+
+  def record_list_starts(server, starts)
+    %w[resources/list resources/templates/list prompts/list].each do |method|
+      original = server.instance_variable_get(:@handlers)[method]
+      replace_handler(server, method, ->(params) {
+        starts << AgentCat::Clock.monotonic_now
+        original.call(params)
+      })
+    end
+  end
+
+  def test_the_list_handlers_start_after_the_tool_call_has_returned
+    finished = Queue.new
+    slow = MCP::Tool.define(name: "slow", description: "A slow tool") do |server_context: nil|
+      sleep 0.3
+      finished << AgentCat::Clock.monotonic_now
+      MCP::Tool::Response.new([{type: "text", text: "done"}])
+    end
+    server = demo_server(tools: [slow])
+    track_demo(server)
+    age_server_info_memory
+    starts = Queue.new
+    record_list_starts(server, starts)
+
+    assert_equal "done", call_alpha(server, name: "slow")[:content].last[:text]
+    wait_for_server_info
+
+    assert_equal 1, server_info_bodies.size
+    returned = finished.pop
+    assert_equal 3, starts.size
+    3.times { assert_operator starts.pop, :>=, returned }
+  end
+
+  def test_the_list_handlers_start_after_the_tool_list_request_has_been_answered
+    finished = Queue.new
     server = demo_server
-    client = track_demo(server)
+    track_demo(server)
+    starts = Queue.new
+    record_list_starts(server, starts)
+    list_tools = server.instance_variable_get(:@handlers)["tools/list"]
+    calls = 0
+    replace_handler(server, "tools/list", ->(params) {
+      calls += 1
+      return list_tools.call(params) unless calls == 1
+
+      sleep 0.3
+      list_tools.call(params).tap { finished << AgentCat::Clock.monotonic_now }
+    })
 
     request_tools_list(server)
     wait_for_server_info
 
-    refute_respond_to client, :post_server_info
-    assert_equal 0, client.events.size
+    assert_equal 1, server_info_bodies.size
+    returned = finished.pop
+    assert_equal 3, starts.size
+    3.times { assert_operator starts.pop, :>=, returned }
   end
 
   def test_the_check_never_raises_into_the_request

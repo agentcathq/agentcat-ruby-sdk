@@ -23,6 +23,7 @@ T.unsafe(T::Private).const_get(:RuntimeLevels).enable_checking_in_tests
 require "minitest/autorun"
 require "stringio"
 require "json"
+require "socket"
 
 # Minitest is loaded, so AgentCat's test mode would turn the SDK off here like it does in
 # a customer's suite. The suite tests the real path, so force it on. Test mode
@@ -79,6 +80,17 @@ end
 # the network, whatever client a test tracks its server with.
 AgentCat::ServerInfo.sender = ServerInfoRecorder.new
 
+# A loopback port that nothing listens on. The default base URL of the suite: a request
+# that leaks past a test's own setup goes nowhere. A test that changes the variable
+# sets it back to this.
+CLOSED_API_URL = begin
+  listener = TCPServer.new("127.0.0.1", 0)
+  "http://127.0.0.1:#{listener.addr[1]}"
+ensure
+  listener&.close
+end
+ENV["AGENTCAT_API_URL"] = CLOSED_API_URL
+
 module AgentCatTestHelpers
   ECHO_SCHEMA = {type: "object", properties: {msg: {type: "string"}}, required: ["msg"]}.freeze
 
@@ -92,15 +104,33 @@ module AgentCatTestHelpers
     AgentCat::ServerInfo.sender.bodies
   end
 
-  # Joins every heartbeat thread still running, so a test reads the recorder after the work.
+  # Joins every heartbeat thread still running, so a test reads the recorder after the
+  # work. `timeout: nil` waits for each thread to end.
   def wait_for_server_info(timeout: 5)
     Thread.list.select { |thread| thread.name == AgentCat::ServerInfo::THREAD_NAME }.each { |thread| thread.join(timeout) }
   end
 
+  # Runs the block with `sender` in place of the recorder. Every heartbeat thread has
+  # ended before the previous sender comes back.
+  def with_server_info_sender(sender)
+    previous = AgentCat::ServerInfo.sender
+    AgentCat::ServerInfo.sender = sender
+    yield
+  ensure
+    wait_for_server_info(timeout: nil)
+    AgentCat::ServerInfo.sender = previous
+  end
+
   # A sender that cannot send: the heartbeat stops before it calls a list handler or a
-  # hook, for a test that counts the calls of a customer hook.
+  # hook, for a test that counts the calls of a customer hook. `restore_server_info`
+  # puts the recorder back.
   def turn_off_server_info
     AgentCat::ServerInfo.sender = Object.new
+  end
+
+  def restore_server_info
+    wait_for_server_info(timeout: nil)
+    AgentCat::ServerInfo.sender = ServerInfoRecorder.new
   end
 
   # Moves the first check of this memory `seconds` into the past, as in a process that

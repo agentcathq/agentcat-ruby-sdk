@@ -10,6 +10,11 @@ class HooksTest < Minitest::Test
     turn_off_server_info
   end
 
+  def teardown
+    restore_server_info
+    super
+  end
+
   # --- hook_timeout option ---
 
   def test_hook_timeout_defaults_to_one_second
