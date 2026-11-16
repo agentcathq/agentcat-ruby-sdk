@@ -69,8 +69,7 @@ module AgentCat
         nil
       end
 
-      # Runs `block` on every `tools/list` request, after the sync of `before_dispatch`.
-      # No-op by default.
+      # Runs `block` after the server has answered a `tools/list` request. No-op by default.
       sig { params(block: T.proc.void).void }
       def on_tools_list(&block)
       end

@@ -163,16 +163,20 @@ module AgentCat
         original = @server.method(method_name)
         adapter = self
         @server.define_singleton_method(method_name) do |request, **kwargs|
-          adapter.before_request(request, sync)
-          original.call(request, **kwargs)
+          listing = adapter.before_request(request, sync)
+          begin
+            original.call(request, **kwargs)
+          ensure
+            adapter.after_request(listing)
+          end
         end
       end
 
       public
 
       # Runs ahead of every request the wrapped `handle`/`handle_json` gets. Never raises:
-      # the request always reaches the gem.
-      sig { params(request: T.untyped, sync: T.proc.void).void }
+      # the request always reaches the gem. Returns whether the request is a `tools/list`.
+      sig { params(request: T.untyped, sync: T.proc.void).returns(T::Boolean) }
       def before_request(request, sync)
         # Cheap retry (a boolean after the first success): if the HTTP transport wasn't
         # loaded when `track` ran, this installs the request-header hook the first time a
@@ -180,10 +184,20 @@ module AgentCat
         AgentCat::RequestContext.install!
         parsed = parse_request(request)
         sync.call if needs_sync?(parsed)
-        @on_tools_list&.call if request_method(parsed) == "tools/list"
+        request_method(parsed) == "tools/list"
       rescue => e
         AgentCat::Log.warn("AgentCat could not instrument new tools before a request: #{e.class}")
         AgentCat.logger.debug { "before_request failed: #{e.class}: #{e.message}" }
+        false
+      end
+
+      # Runs once the gem has answered the request, so the `on_tools_list` work never runs
+      # beside it. Never raises.
+      sig { params(listing: T::Boolean).void }
+      def after_request(listing)
+        @on_tools_list&.call if listing
+      rescue
+        nil
       end
 
       private

@@ -66,7 +66,7 @@ Injected parameters are stripped from arguments before your tool handler runs, s
 
 ## Server info
 
-AgentCat also records what an agent sees on your server: its name, version, title and instructions, and the full lists of its tools, resources, resource templates and prompts. To get them, the SDK calls your server's own list handlers, with the context of the request that starts the check, and sends the result to AgentCat in the background. No request waits for it, and a list handler that fails or hangs costs only that list.
+AgentCat also records what an agent sees on your server: its name, version, title and instructions, and the full lists of its tools, resources, resource templates and prompts. To get them, the SDK calls your server's own list handlers, with the context of the request that starts the check, and sends the result to AgentCat in the background. The check starts only after your server has answered the request, so no request waits for it and no list handler runs beside it, and a list handler that fails or hangs costs only that list.
 
 - **When:** a `tools/list` request, a `get_more_tools` call, or any other tool call once the process has run for a minute starts a check. The SDK sends about once an hour for each process, project and server name. It sends more often in a runtime that keeps no memory between requests (a new process for each request).
 - **Redaction:** `redact_sensitive_information` runs on every text of it, except the names of the server, the tools, the resources and the prompts, and the URIs. If the function fails, the SDK sends nothing.
