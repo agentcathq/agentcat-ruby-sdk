@@ -435,11 +435,22 @@ class ServerInfoTest < Minitest::Test
     track_demo(server, redact_sensitive_information: ->(text) { (text == "Use the demo tools.") ? raise(hook_error, "cannot redact: #{text}") : text })
     age_server_info_memory
 
+    assert_quiet_and_unharmed(server) { wait_for_server_info }
+    assert_equal 0, server_info_bodies.size
+  end
+
+  def test_the_debug_log_holds_a_fixed_line_in_place_of_the_message_of_the_redaction_function
+    hook_error = Class.new(Exception) # standard:disable Lint/InheritException
+    server = demo_server
+    track_demo(server, redact_sensitive_information: ->(text) { (text == "Use the demo tools.") ? raise(hook_error, "cannot redact: #{text}") : text })
+    age_server_info_memory
+
     log = capture_log do
-      assert_quiet_and_unharmed(server) { wait_for_server_info }
+      call_alpha(server)
+      wait_for_server_info
     end
 
-    assert_equal 0, server_info_bodies.size
+    assert_includes log, "DEBUG: hook raised AgentCat::Redaction::ServerInfoHookFailed: redact_sensitive_information failed\n"
     refute_includes log, "Use the demo tools."
     refute_includes log, "cannot redact"
   end
@@ -648,8 +659,10 @@ class ServerInfoTest < Minitest::Test
     end
   end
 
-  def record_list_starts(server, starts)
-    %w[resources/list resources/templates/list prompts/list].each do |method|
+  LIST_METHODS = %w[tools/list resources/list resources/templates/list prompts/list].freeze
+
+  def record_list_starts(server, starts, methods: LIST_METHODS)
+    methods.each do |method|
       original = server.instance_variable_get(:@handlers)[method]
       replace_handler(server, method, ->(params) {
         starts << AgentCat::Clock.monotonic_now
@@ -676,8 +689,8 @@ class ServerInfoTest < Minitest::Test
 
     assert_equal 1, server_info_bodies.size
     returned = finished.pop
-    assert_equal 3, starts.size
-    3.times { assert_operator starts.pop, :>=, returned }
+    assert_equal 4, starts.size
+    4.times { assert_operator starts.pop, :>=, returned }
   end
 
   def test_the_list_handlers_start_after_the_tool_list_request_has_been_answered
@@ -685,12 +698,20 @@ class ServerInfoTest < Minitest::Test
     server = demo_server
     track_demo(server)
     starts = Queue.new
-    record_list_starts(server, starts)
+    record_list_starts(server, starts, methods: LIST_METHODS - ["tools/list"])
     list_tools = server.instance_variable_get(:@handlers)["tools/list"]
-    calls = 0
+    turns = Queue.new
+    turns << :answer
     replace_handler(server, "tools/list", ->(params) {
-      calls += 1
-      return list_tools.call(params) unless calls == 1
+      first = begin
+        turns.pop(true)
+      rescue ThreadError
+        nil
+      end
+      unless first
+        starts << AgentCat::Clock.monotonic_now
+        return list_tools.call(params)
+      end
 
       sleep 0.3
       list_tools.call(params).tap { finished << AgentCat::Clock.monotonic_now }
@@ -701,8 +722,8 @@ class ServerInfoTest < Minitest::Test
 
     assert_equal 1, server_info_bodies.size
     returned = finished.pop
-    assert_equal 3, starts.size
-    3.times { assert_operator starts.pop, :>=, returned }
+    assert_equal 4, starts.size
+    4.times { assert_operator starts.pop, :>=, returned }
   end
 
   def test_the_check_never_raises_into_the_request
