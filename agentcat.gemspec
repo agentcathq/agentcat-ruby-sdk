@@ -23,7 +23,7 @@ Gem::Specification.new do |s|
   # so a patch bump is exactly the kind of change that shouldn't apply itself unreviewed on
   # a plain `bundle install`/`bundle update`. Bumping this is a deliberate step — see
   # CONTRIBUTING.md.
-  s.add_runtime_dependency "agentcat-api", "= 0.0.3"
+  s.add_runtime_dependency "agentcat-api", "= 0.0.4"
   s.add_runtime_dependency "sorbet-runtime", ">= 0.5"
   # The oldest `mcp` AgentCat supports, and the one place that floor lives: the `mcp compat`
   # workflow (scripts/mcp_versions.rb) reads it from here. Older releases are covered by the

@@ -49,7 +49,7 @@ module AgentCatApi
     #   end
     # If no block given, return the default Configuration object.
     #
-    # pkg:gem/agentcat-api#lib/agentcat-api.rb:42
+    # pkg:gem/agentcat-api#lib/agentcat-api.rb:45
     def configure; end
   end
 end
@@ -838,6 +838,7 @@ class AgentCatApi::EmailChannelVerifyRequest
   # @return [Hash] Returns the value in the form of hash
   #
   # pkg:gem/agentcat-api#lib/agentcat-api/models/email_channel_verify_request.rb:223
+  sig { params(value: T.untyped).returns(T.untyped) }
   def _to_hash(value); end
 
   # @see the `==` method
@@ -954,6 +955,7 @@ class AgentCatApi::EmailChannelVerifyResponse
   # @return [Hash] Returns the value in the form of hash
   #
   # pkg:gem/agentcat-api#lib/agentcat-api/models/email_channel_verify_response.rb:247
+  sig { params(value: T.untyped).returns(T.untyped) }
   def _to_hash(value); end
 
   # pkg:gem/agentcat-api#lib/agentcat-api/models/email_channel_verify_response.rb:20
@@ -1079,6 +1081,7 @@ class AgentCatApi::Error
   # @return [Hash] Returns the value in the form of hash
   #
   # pkg:gem/agentcat-api#lib/agentcat-api/models/error.rb:221
+  sig { params(value: T.untyped).returns(T.untyped) }
   def _to_hash(value); end
 
   # pkg:gem/agentcat-api#lib/agentcat-api/models/error.rb:18
@@ -1195,6 +1198,7 @@ class AgentCatApi::EventAcceptedResponse
   # @return [Hash] Returns the value in the form of hash
   #
   # pkg:gem/agentcat-api#lib/agentcat-api/models/event_accepted_response.rb:206
+  sig { params(value: T.untyped).returns(T.untyped) }
   def _to_hash(value); end
 
   # @see the `==` method
@@ -1388,6 +1392,7 @@ class AgentCatApi::PublishEventRequest
   # @return [Hash] Returns the value in the form of hash
   #
   # pkg:gem/agentcat-api#lib/agentcat-api/models/publish_event_request.rb:529
+  sig { params(value: T.untyped).returns(T.untyped) }
   def _to_hash(value); end
 
   # Optional actor ID
@@ -1773,6 +1778,176 @@ class AgentCatApi::PublishEventRequest::EnumAttributeValidator
   def valid?(value); end
 end
 
+# pkg:gem/agentcat-api#lib/agentcat-api/models/publish_server_info_request.rb:17
+class AgentCatApi::PublishServerInfoRequest
+  # Initializes the object
+  # @param [Hash] attributes Model attributes in the form of hash
+  #
+  # pkg:gem/agentcat-api#lib/agentcat-api/models/publish_server_info_request.rb:78
+  def initialize(attributes = T.unsafe(nil)); end
+
+  # Checks equality by comparing each attribute.
+  # @param [Object] Object to be compared
+  #
+  # pkg:gem/agentcat-api#lib/agentcat-api/models/publish_server_info_request.rb:170
+  def ==(o); end
+
+  # Outputs non-array value in the form of hash
+  # For object, use to_hash. Otherwise, just return the value
+  # @param [Object] value Any valid value
+  # @return [Hash] Returns the value in the form of hash
+  #
+  # pkg:gem/agentcat-api#lib/agentcat-api/models/publish_server_info_request.rb:291
+  sig { params(value: T.untyped).returns(T.untyped) }
+  def _to_hash(value); end
+
+  # @see the `==` method
+  # @param [Object] Object to be compared
+  #
+  # pkg:gem/agentcat-api#lib/agentcat-api/models/publish_server_info_request.rb:183
+  def eql?(o); end
+
+  # What the MCP server offers to agents. Each key is a list type of the MCP specification (tools, resources, resourceTemplates, prompts) with the items as the server lists them. Send every item with its full description. AgentCat stores keys that it does not know.
+  #
+  # pkg:gem/agentcat-api#lib/agentcat-api/models/publish_server_info_request.rb:34
+  def features; end
+
+  # What the MCP server offers to agents. Each key is a list type of the MCP specification (tools, resources, resourceTemplates, prompts) with the items as the server lists them. Send every item with its full description. AgentCat stores keys that it does not know.
+  #
+  # pkg:gem/agentcat-api#lib/agentcat-api/models/publish_server_info_request.rb:34
+  def features=(_arg0); end
+
+  # Calculates hash code according to all attributes.
+  # @return [Integer] Hash code
+  #
+  # pkg:gem/agentcat-api#lib/agentcat-api/models/publish_server_info_request.rb:189
+  def hash; end
+
+  # Instructions that the MCP server gives to agents. AgentCat keeps the first 100,000 characters.
+  #
+  # pkg:gem/agentcat-api#lib/agentcat-api/models/publish_server_info_request.rb:31
+  def instructions; end
+
+  # Instructions that the MCP server gives to agents. AgentCat keeps the first 100,000 characters.
+  #
+  # pkg:gem/agentcat-api#lib/agentcat-api/models/publish_server_info_request.rb:31
+  def instructions=(_arg0); end
+
+  # Show invalid properties with the reasons. Usually used together with valid?
+  # @return Array for valid properties with the reasons
+  #
+  # pkg:gem/agentcat-api#lib/agentcat-api/models/publish_server_info_request.rb:121
+  def list_invalid_properties; end
+
+  # ID of the project that the MCP server reports to.
+  #
+  # pkg:gem/agentcat-api#lib/agentcat-api/models/publish_server_info_request.rb:19
+  def project_id; end
+
+  # Custom attribute writer method with validation
+  # @param [Object] project_id Value to be assigned
+  #
+  # pkg:gem/agentcat-api#lib/agentcat-api/models/publish_server_info_request.rb:19
+  def project_id=(project_id); end
+
+  # Name of the MCP server. Send the same value as server_name on events.
+  #
+  # pkg:gem/agentcat-api#lib/agentcat-api/models/publish_server_info_request.rb:22
+  def server_name; end
+
+  # Custom attribute writer method with validation
+  # @param [Object] server_name Value to be assigned
+  #
+  # pkg:gem/agentcat-api#lib/agentcat-api/models/publish_server_info_request.rb:22
+  def server_name=(server_name); end
+
+  # Display title of the MCP server.
+  #
+  # pkg:gem/agentcat-api#lib/agentcat-api/models/publish_server_info_request.rb:28
+  def server_title; end
+
+  # Display title of the MCP server.
+  #
+  # pkg:gem/agentcat-api#lib/agentcat-api/models/publish_server_info_request.rb:28
+  def server_title=(_arg0); end
+
+  # Version of the MCP server, as on events.
+  #
+  # pkg:gem/agentcat-api#lib/agentcat-api/models/publish_server_info_request.rb:25
+  def server_version; end
+
+  # Version of the MCP server, as on events.
+  #
+  # pkg:gem/agentcat-api#lib/agentcat-api/models/publish_server_info_request.rb:25
+  def server_version=(_arg0); end
+
+  # to_body is an alias to to_hash (backward compatibility)
+  # @return [Hash] Returns the object in the form of hash
+  #
+  # pkg:gem/agentcat-api#lib/agentcat-api/models/publish_server_info_request.rb:267
+  def to_body; end
+
+  # Returns the object in the form of hash
+  # @return [Hash] Returns the object in the form of hash
+  #
+  # pkg:gem/agentcat-api#lib/agentcat-api/models/publish_server_info_request.rb:273
+  def to_hash; end
+
+  # Returns the string representation of the object
+  # @return [String] String presentation of the object
+  #
+  # pkg:gem/agentcat-api#lib/agentcat-api/models/publish_server_info_request.rb:261
+  def to_s; end
+
+  # Check to see if the all the properties in the model are valid
+  # @return true if the model is valid
+  #
+  # pkg:gem/agentcat-api#lib/agentcat-api/models/publish_server_info_request.rb:137
+  def valid?; end
+
+  class << self
+    # Deserializes the data based on type
+    # @param string type Data type
+    # @param string value Value to be deserialized
+    # @return [Object] Deserialized data
+    #
+    # pkg:gem/agentcat-api#lib/agentcat-api/models/publish_server_info_request.rb:220
+    def _deserialize(type, value); end
+
+    # Returns attribute mapping this model knows about
+    #
+    # pkg:gem/agentcat-api#lib/agentcat-api/models/publish_server_info_request.rb:49
+    def acceptable_attribute_map; end
+
+    # Returns all the JSON keys this model knows about
+    #
+    # pkg:gem/agentcat-api#lib/agentcat-api/models/publish_server_info_request.rb:54
+    def acceptable_attributes; end
+
+    # Attribute mapping from ruby-style variable name to JSON key.
+    #
+    # pkg:gem/agentcat-api#lib/agentcat-api/models/publish_server_info_request.rb:37
+    def attribute_map; end
+
+    # Builds the object from hash
+    # @param [Hash] attributes Model attributes in the form of hash
+    # @return [Object] Returns the model itself
+    #
+    # pkg:gem/agentcat-api#lib/agentcat-api/models/publish_server_info_request.rb:196
+    def build_from_hash(attributes); end
+
+    # List of attributes with nullable: true
+    #
+    # pkg:gem/agentcat-api#lib/agentcat-api/models/publish_server_info_request.rb:71
+    def openapi_nullable; end
+
+    # Attribute type mapping.
+    #
+    # pkg:gem/agentcat-api#lib/agentcat-api/models/publish_server_info_request.rb:59
+    def openapi_types; end
+  end
+end
+
 # pkg:gem/agentcat-api#lib/agentcat-api/models/query_timeout.rb:17
 class AgentCatApi::QueryTimeout
   # Initializes the object
@@ -1793,6 +1968,7 @@ class AgentCatApi::QueryTimeout
   # @return [Hash] Returns the value in the form of hash
   #
   # pkg:gem/agentcat-api#lib/agentcat-api/models/query_timeout.rb:271
+  sig { params(value: T.untyped).returns(T.untyped) }
   def _to_hash(value); end
 
   # pkg:gem/agentcat-api#lib/agentcat-api/models/query_timeout.rb:20
@@ -1913,6 +2089,150 @@ class AgentCatApi::QueryTimeout::EnumAttributeValidator
   def valid?(value); end
 end
 
+# pkg:gem/agentcat-api#lib/agentcat-api/models/server_info_accepted_response.rb:17
+class AgentCatApi::ServerInfoAcceptedResponse
+  # Initializes the object
+  # @param [Hash] attributes Model attributes in the form of hash
+  #
+  # pkg:gem/agentcat-api#lib/agentcat-api/models/server_info_accepted_response.rb:52
+  def initialize(attributes = T.unsafe(nil)); end
+
+  # Checks equality by comparing each attribute.
+  # @param [Object] Object to be compared
+  #
+  # pkg:gem/agentcat-api#lib/agentcat-api/models/server_info_accepted_response.rb:90
+  def ==(o); end
+
+  # Outputs non-array value in the form of hash
+  # For object, use to_hash. Otherwise, just return the value
+  # @param [Object] value Any valid value
+  # @return [Hash] Returns the value in the form of hash
+  #
+  # pkg:gem/agentcat-api#lib/agentcat-api/models/server_info_accepted_response.rb:206
+  sig { params(value: T.untyped).returns(T.untyped) }
+  def _to_hash(value); end
+
+  # @see the `==` method
+  # @param [Object] Object to be compared
+  #
+  # pkg:gem/agentcat-api#lib/agentcat-api/models/server_info_accepted_response.rb:98
+  def eql?(o); end
+
+  # Calculates hash code according to all attributes.
+  # @return [Integer] Hash code
+  #
+  # pkg:gem/agentcat-api#lib/agentcat-api/models/server_info_accepted_response.rb:104
+  def hash; end
+
+  # Show invalid properties with the reasons. Usually used together with valid?
+  # @return Array for valid properties with the reasons
+  #
+  # pkg:gem/agentcat-api#lib/agentcat-api/models/server_info_accepted_response.rb:75
+  def list_invalid_properties; end
+
+  # pkg:gem/agentcat-api#lib/agentcat-api/models/server_info_accepted_response.rb:18
+  def status; end
+
+  # pkg:gem/agentcat-api#lib/agentcat-api/models/server_info_accepted_response.rb:18
+  def status=(_arg0); end
+
+  # to_body is an alias to to_hash (backward compatibility)
+  # @return [Hash] Returns the object in the form of hash
+  #
+  # pkg:gem/agentcat-api#lib/agentcat-api/models/server_info_accepted_response.rb:182
+  def to_body; end
+
+  # Returns the object in the form of hash
+  # @return [Hash] Returns the object in the form of hash
+  #
+  # pkg:gem/agentcat-api#lib/agentcat-api/models/server_info_accepted_response.rb:188
+  def to_hash; end
+
+  # Returns the string representation of the object
+  # @return [String] String presentation of the object
+  #
+  # pkg:gem/agentcat-api#lib/agentcat-api/models/server_info_accepted_response.rb:176
+  def to_s; end
+
+  # Check to see if the all the properties in the model are valid
+  # @return true if the model is valid
+  #
+  # pkg:gem/agentcat-api#lib/agentcat-api/models/server_info_accepted_response.rb:83
+  def valid?; end
+
+  class << self
+    # Deserializes the data based on type
+    # @param string type Data type
+    # @param string value Value to be deserialized
+    # @return [Object] Deserialized data
+    #
+    # pkg:gem/agentcat-api#lib/agentcat-api/models/server_info_accepted_response.rb:135
+    def _deserialize(type, value); end
+
+    # Returns attribute mapping this model knows about
+    #
+    # pkg:gem/agentcat-api#lib/agentcat-api/models/server_info_accepted_response.rb:28
+    def acceptable_attribute_map; end
+
+    # Returns all the JSON keys this model knows about
+    #
+    # pkg:gem/agentcat-api#lib/agentcat-api/models/server_info_accepted_response.rb:33
+    def acceptable_attributes; end
+
+    # Attribute mapping from ruby-style variable name to JSON key.
+    #
+    # pkg:gem/agentcat-api#lib/agentcat-api/models/server_info_accepted_response.rb:21
+    def attribute_map; end
+
+    # Builds the object from hash
+    # @param [Hash] attributes Model attributes in the form of hash
+    # @return [Object] Returns the model itself
+    #
+    # pkg:gem/agentcat-api#lib/agentcat-api/models/server_info_accepted_response.rb:111
+    def build_from_hash(attributes); end
+
+    # List of attributes with nullable: true
+    #
+    # pkg:gem/agentcat-api#lib/agentcat-api/models/server_info_accepted_response.rb:45
+    def openapi_nullable; end
+
+    # Attribute type mapping.
+    #
+    # pkg:gem/agentcat-api#lib/agentcat-api/models/server_info_accepted_response.rb:38
+    def openapi_types; end
+  end
+end
+
+# pkg:gem/agentcat-api#lib/agentcat-api/api/server_info_api.rb:16
+class AgentCatApi::ServerInfoApi
+  # pkg:gem/agentcat-api#lib/agentcat-api/api/server_info_api.rb:19
+  def initialize(api_client = T.unsafe(nil)); end
+
+  # pkg:gem/agentcat-api#lib/agentcat-api/api/server_info_api.rb:17
+  def api_client; end
+
+  # pkg:gem/agentcat-api#lib/agentcat-api/api/server_info_api.rb:17
+  def api_client=(_arg0); end
+
+  # Publish MCP server info
+  # Tell AgentCat what an MCP server offers to agents: its name, version, title, instructions and its lists of tools, resources, resource templates and prompts. Send it when the server starts and then once an hour. The body can hold 1,000,000 bytes at most. AgentCat counts each non-ASCII character as 6 bytes, and an emoji as 12 bytes. AgentCat keeps one row per server name per day and drops repeats. Returns immediately with 202 Accepted.
+  # @param [Hash] opts the optional parameters
+  # @option opts [PublishServerInfoRequest] :publish_server_info_request
+  # @return [ServerInfoAcceptedResponse]
+  #
+  # pkg:gem/agentcat-api#lib/agentcat-api/api/server_info_api.rb:27
+  def publish_server_info(opts = T.unsafe(nil)); end
+
+  # Publish MCP server info
+  # Tell AgentCat what an MCP server offers to agents: its name, version, title, instructions and its lists of tools, resources, resource templates and prompts. Send it when the server starts and then once an hour. The body can hold 1,000,000 bytes at most. AgentCat counts each non-ASCII character as 6 bytes, and an emoji as 12 bytes. AgentCat keeps one row per server name per day and drops repeats. Returns immediately with 202 Accepted.
+  # @param [Hash] opts the optional parameters
+  # @option opts [PublishServerInfoRequest] :publish_server_info_request
+  # @return [Array<(ServerInfoAcceptedResponse, Integer, Hash)>] ServerInfoAcceptedResponse data, response status code and response headers
+  #
+  # pkg:gem/agentcat-api#lib/agentcat-api/api/server_info_api.rb:37
+  def publish_server_info_with_http_info(opts = T.unsafe(nil)); end
+end
+
 # pkg:gem/agentcat-api#lib/agentcat-api/models/unsubscribe_request_request.rb:17
 class AgentCatApi::UnsubscribeRequestRequest
   # Initializes the object
@@ -1933,6 +2253,7 @@ class AgentCatApi::UnsubscribeRequestRequest
   # @return [Hash] Returns the value in the form of hash
   #
   # pkg:gem/agentcat-api#lib/agentcat-api/models/unsubscribe_request_request.rb:223
+  sig { params(value: T.untyped).returns(T.untyped) }
   def _to_hash(value); end
 
   # @see the `==` method
