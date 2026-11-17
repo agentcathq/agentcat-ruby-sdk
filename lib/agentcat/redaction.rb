@@ -70,6 +70,67 @@ module AgentCat
       worker&.close
     end
 
+    # The keys of a server info list item that name it. They go out as they are, like an
+    # event's `resource_name`.
+    SERVER_INFO_NAME_KEYS = T.let(%w[name uri uriTemplate].freeze, T::Array[String])
+
+    # `redact_sensitive_information` on every string of the server info heartbeat: the
+    # title, the instructions and each list item, except the item's own name keys. Keys
+    # never change. nil when the hook raised, timed out or returned a non-String for any
+    # value, or when `deadline` (monotonic seconds) passed: then nothing goes out.
+    sig { params(fields: T::Hash[Symbol, T.untyped], options: AgentCat::Options, deadline: Float).returns(T.nilable(T::Hash[Symbol, T.untyped])).checked(:tests) }
+    def self.apply_server_info_redaction(fields, options, deadline:)
+      hook = options.redact_sensitive_information
+      return fields unless hook
+
+      worker = Hooks::Worker.new(guard_server_info_hook(hook), timeout: options.hook_timeout)
+      redacter = ->(value) do
+        raise StringRedactionFailed if Clock.monotonic_now > deadline
+
+        redact_string(worker, value)
+      end
+      features = fields.fetch(:features).transform_values do |items|
+        items.map { |item| redact_list_item(item, &redacter) }
+      end
+      {
+        server_title: redacter.call(fields.fetch(:server_title)),
+        instructions: redacter.call(fields.fetch(:instructions)),
+        features: features
+      }
+    rescue StringRedactionFailed
+      nil
+    ensure
+      worker&.close
+    end
+
+    # Raised in place of any error of the hook while it redacts server info. Its message is
+    # fixed: the hook's own message can quote the text it was redacting.
+    class ServerInfoHookFailed < StandardError
+      def initialize
+        super("redact_sensitive_information failed")
+      end
+    end
+
+    # The hook, with every Exception it raises turned into one ServerInfoHookFailed, so no
+    # error that is not a StandardError leaves the worker thread.
+    sig { params(hook: T.untyped).returns(T.proc.params(text: String).returns(T.untyped)) }
+    def self.guard_server_info_hook(hook)
+      lambda do |text|
+        hook.call(text)
+      rescue Exception # standard:disable Lint/RescueException
+        raise ServerInfoHookFailed.new, cause: nil
+      end
+    end
+    private_class_method :guard_server_info_hook
+
+    sig { params(item: T.untyped, block: T.proc.params(arg: String).returns(String)).returns(T.untyped) }
+    def self.redact_list_item(item, &block)
+      return deep_map(item, &block) unless item.is_a?(Hash)
+
+      item.to_h { |key, value| [key, SERVER_INFO_NAME_KEYS.include?(key) ? value : deep_map(value, &block)] }
+    end
+    private_class_method :redact_list_item
+
     sig { params(worker: Hooks::Worker, string: String).returns(String).checked(:tests) }
     def self.redact_string(worker, string)
       result = worker.call(string)

@@ -68,6 +68,31 @@ module AgentCat
       def tool_named(name)
         nil
       end
+
+      # Runs `block` after the server has answered a `tools/list` request. No-op by default.
+      sig { params(block: T.proc.void).void }
+      def on_tools_list(&block)
+      end
+
+      # The server's own handler for a list request (`tools/list`, `resources/list`,
+      # `resources/templates/list`, `prompts/list`) as a callable
+      # `(params, server_context) -> result`, or nil when the server does not answer it.
+      sig { params(method: String).returns(T.untyped) }
+      def list_handler(method)
+        nil
+      end
+
+      # The title of the server's implementation info, or "".
+      sig { returns(String) }
+      def server_title
+        ""
+      end
+
+      # The server's instructions, or "".
+      sig { returns(String) }
+      def instructions
+        ""
+      end
     end
   end
 end

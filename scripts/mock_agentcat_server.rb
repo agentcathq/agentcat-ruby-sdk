@@ -1,4 +1,4 @@
-# Local stand-in for the AgentCat events API (stdlib-only, no webrick).
+# Local stand-in for the AgentCat events and server info API (stdlib-only, no webrick).
 #
 #   bundle exec ruby scripts/mock_agentcat_server.rb
 #   AGENTCAT_API_URL=http://127.0.0.1:4567 bundle exec ruby examples/stdio_server.rb
@@ -30,6 +30,10 @@ loop do
     if method == "POST" && path.to_s.start_with?("/v1/public/events/")
       puts "Received event: #{body}"
       status = 200
+      resp_body = {status: "accepted"}.to_json
+    elsif method == "POST" && path.to_s.start_with?("/v1/public/server-info/")
+      puts "Received server info: #{body.bytesize} bytes"
+      status = 202
       resp_body = {status: "accepted"}.to_json
     else
       status = 404

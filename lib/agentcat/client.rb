@@ -138,18 +138,36 @@ module AgentCat
         nil
       end
 
-      sig { returns(AgentCatApi::Configuration) }
-      def configuration
+      # Publishes the server info heartbeat to the base URL of the events, with no
+      # `Authorization` header and a fixed 10 s read timeout. Never raises and logs at
+      # debug only; returns the HTTP status of the answer, or nil when no answer came.
+      sig { params(body: T::Hash[Symbol, T.untyped]).returns(T.nilable(Integer)) }
+      def post_server_info(body)
+        request = AgentCatApi::PublishServerInfoRequest.new(body)
+        api = AgentCatApi::ServerInfoApi.new(AgentCatApi::ApiClient.new(configuration(read_timeout: DEFAULT_READ_TIMEOUT_SECONDS.to_f)))
+        _data, status, _headers = api.publish_server_info_with_http_info(publish_server_info_request: request, debug_auth_names: [])
+        status
+      rescue AgentCatApi::ApiError => e
+        AgentCat.logger.debug { "failed to publish server info: #{e.class} (HTTP #{e.code.inspect})" }
+        code = e.code
+        (code.is_a?(Integer) && code.positive?) ? code : nil
+      rescue => e
+        AgentCat.logger.debug { "failed to publish server info: #{e.class}" }
+        nil
+      end
+
+      sig { params(read_timeout: Float).returns(AgentCatApi::Configuration) }
+      def configuration(read_timeout: read_timeout_seconds)
         uri = URI.parse(api_url)
         AgentCatApi::Configuration.new.tap do |config|
           config.scheme = uri.scheme
           config.host = (uri.port == uri.default_port) ? uri.host : "#{uri.host}:#{uri.port}"
           config.base_path = uri.path.to_s.sub(%r{/+\z}, "")
           config.ignore_operation_servers = true
-          config.timeout = read_timeout_seconds
+          config.timeout = read_timeout
           config.configure_faraday_connection do |conn|
             conn.options.open_timeout = OPEN_TIMEOUT_SECONDS
-            conn.options.timeout = read_timeout_seconds
+            conn.options.timeout = read_timeout
           end
         end
       end

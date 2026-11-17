@@ -13,6 +13,7 @@ require_relative "tags"
 require_relative "tool_call"
 require_relative "version"
 require_relative "private_members"
+require_relative "server_info"
 
 module AgentCat
   # The per-tool call pipeline that Tracker installs on every ToolHandle:
@@ -63,6 +64,48 @@ module AgentCat
     sig { params(arguments: T.nilable(T::Hash[T.untyped, T.untyped]), server_context: T.untyped, original: T.untyped).returns(T.untyped).checked(:tests) }
     def call(arguments, server_context, original)
       Thread.current[RAN_KEY] = true
+      intercept(arguments, server_context, original)
+    ensure
+      check_server_info(server_context)
+    end
+
+    # A call the `mcp` gem answered before the tool ran (as in TS): no tool by that
+    # name (`error`, the gem's exception, which it re-raises), or arguments that failed
+    # its required or schema check (`result`, its isError result). Records one error
+    # event, resolving the session like a real call, and returns the result to send: an
+    # isError result gets the mint-back like any other (TS v1), an exception gets none.
+    sig do
+      params(
+        arguments: T.untyped,
+        server_context: T.untyped,
+        started_at: Float,
+        result: T.untyped,
+        error: T.nilable(StandardError)
+      ).returns(T.untyped).checked(:tests)
+    end
+    def record_rejected(arguments, server_context, started_at:, result: nil, error: nil)
+      args = arguments.is_a?(Hash) ? arguments.transform_keys(&:to_s) : {}
+      tool_call = build_tool_call(args, server_context)
+      identity = resolve_identity(tool_call)
+      session = resolve_session(args, tool_call)
+      error_data = error ? nil : ErrorCapture.capture_result(result)
+      publish(args, session, server_context, tool_call, identity: identity, result: result, error: error, error_data: error_data, started_at: started_at)
+      error ? result : safe_mint_back(result, session, args)
+    end
+
+    private
+
+    # Runs once the tool has returned or raised, so the heartbeat's list handlers never
+    # run beside it. Never raises: it must not replace the call's result or error.
+    sig { params(server_context: T.untyped).void }
+    def check_server_info(server_context)
+      ServerInfo.check(@tracker, (@tool_name == Tracker::GET_MORE_TOOLS) ? :get_more_tools : :tool_call, server_context)
+    rescue
+      nil
+    end
+
+    sig { params(arguments: T.nilable(T::Hash[T.untyped, T.untyped]), server_context: T.untyped, original: T.untyped).returns(T.untyped).checked(:tests) }
+    def intercept(arguments, server_context, original)
       args = (arguments || {}).transform_keys(&:to_s)
       # Tracing off: just keep our injected params (context, if that's still on) away from
       # the handler. No identify, no session, no mint-back, no event.
@@ -96,32 +139,6 @@ module AgentCat
 
       safe_mint_back(result, session, args)
     end
-
-    # A call the `mcp` gem answered before the tool ran (as in TS): no tool by that
-    # name (`error`, the gem's exception, which it re-raises), or arguments that failed
-    # its required or schema check (`result`, its isError result). Records one error
-    # event, resolving the session like a real call, and returns the result to send: an
-    # isError result gets the mint-back like any other (TS v1), an exception gets none.
-    sig do
-      params(
-        arguments: T.untyped,
-        server_context: T.untyped,
-        started_at: Float,
-        result: T.untyped,
-        error: T.nilable(StandardError)
-      ).returns(T.untyped).checked(:tests)
-    end
-    def record_rejected(arguments, server_context, started_at:, result: nil, error: nil)
-      args = arguments.is_a?(Hash) ? arguments.transform_keys(&:to_s) : {}
-      tool_call = build_tool_call(args, server_context)
-      identity = resolve_identity(tool_call)
-      session = resolve_session(args, tool_call)
-      error_data = error ? nil : ErrorCapture.capture_result(result)
-      publish(args, session, server_context, tool_call, identity: identity, result: result, error: error, error_data: error_data, started_at: started_at)
-      error ? result : safe_mint_back(result, session, args)
-    end
-
-    private
 
     # `mint_back` builds a new response object (or Hash) from the tool's real result - a
     # bug there must never turn a successful tool call into a failed one. Falls back to
