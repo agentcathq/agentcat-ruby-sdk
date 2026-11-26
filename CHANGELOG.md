@@ -7,6 +7,8 @@ and this project follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-11-26
+
 ### Security
 
 - The SDK now masks sensitive values in every event before the event leaves your server. It
@@ -85,6 +87,7 @@ follows Semantic Versioning: a breaking change needs a new major version.
 - A placeholder that reserves the `agentcat` gem name on RubyGems. It
   contains no SDK code.
 
-[Unreleased]: https://github.com/agentcathq/agentcat-ruby-sdk/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/agentcathq/agentcat-ruby-sdk/compare/v1.1.1...HEAD
+[1.1.1]: https://github.com/agentcathq/agentcat-ruby-sdk/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/agentcathq/agentcat-ruby-sdk/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/agentcathq/agentcat-ruby-sdk/releases/tag/v1.0.0
