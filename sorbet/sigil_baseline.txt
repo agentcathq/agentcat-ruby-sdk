@@ -30,6 +30,7 @@ lib/agentcat/rejected_calls.rb:true
 lib/agentcat/request_context.rb:true
 lib/agentcat/sanitization.rb:true
 lib/agentcat/schema/prompts.rb:true
+lib/agentcat/sensitive_keys.rb:true
 lib/agentcat/server_info.rb:true
 lib/agentcat/session_manager.rb:true
 lib/agentcat/tags.rb:true

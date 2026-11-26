@@ -7,6 +7,18 @@ and this project follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Security
+
+- The SDK now masks sensitive values in every event before the event leaves your server. It
+  tests each key in `parameters`, `response` and `error`, at any depth. When the key names a
+  secret, the SDK keeps the key and replaces the value with `[redacted]`. A key names a
+  secret when it is a known credential header (`authorization`, `cookie`, `x-api-key` and
+  others) or has a word such as `token`, `secret`, `password`, `signature` or `api-key`, in
+  any spelling (`X-Api-Key`, `HTTP_X_API_KEY`, `xApiKey`). Before, the SDK sent the HTTP
+  headers of each MCP request as received, in `parameters.extra.requestInfo.headers`. Tool
+  arguments and results under such key names lose their values too, for example `pageToken`
+  and `auth_type`. `null`, `true` and `false` stay. No option turns the mask off (#7).
+
 ## [1.1.0] - 2026-11-17
 
 ### Added

@@ -359,15 +359,15 @@ class HttpServerE2ETest < Minitest::Test
     end
   end
 
-  # Same keys the TS SDK puts in `extra`: the request's `_meta` as sent, plus the
-  # session id on a sessionful transport.
+  # Same keys the TS SDK puts in `extra`: the request's `_meta` as sent (the sensitive key
+  # mask replaces `progressToken`), plus the session id on a sessionful transport.
   def test_request_meta_and_session_id_land_in_extra_over_real_http
     run_e2e_server do |client, recording|
       client.call_tool_with_meta("echo", {msg: "hi", session_id: "start"}, {"progressToken" => 3, "claudecode/toolUseId" => "toolu_abc"})
 
       extra = recording.last_event[:parameters]["extra"]
 
-      assert_equal({"progressToken" => 3, "claudecode/toolUseId" => "toolu_abc"}, extra["_meta"])
+      assert_equal({"progressToken" => "[redacted]", "claudecode/toolUseId" => "toolu_abc"}, extra["_meta"])
       assert_equal extra.dig("requestInfo", "headers", "mcp-session-id"), extra["sessionId"]
       refute_nil extra["sessionId"]
     end

@@ -137,7 +137,7 @@ AgentCat.track(server, "proj_0000000", AgentCat::Options.new(
 ))
 ```
 
-The `mcp` gem has no auth of its own. If your app authenticates the request, put what it knows in the server's `server_context` as `auth_info:` (a Hash such as `{"clientId" => ..., "scopes" => [...]}`), and AgentCat sends it with the event. Do not put raw tokens there.
+The `mcp` gem has no auth of its own. If your app authenticates the request, put what it knows in the server's `server_context` as `auth_info:` (a Hash such as `{"clientId" => ..., "scopes" => [...]}`), and AgentCat sends it with the event as `extra.authInfo`. The SDK masks secrets before an event leaves your server, and the name `authInfo` counts as one, so its value arrives as `[redacted]`.
 
 ### Tags and properties
 
@@ -153,6 +153,8 @@ AgentCat.track(server, "proj_0000000", AgentCat::Options.new(
 ```
 
 ### Redacting sensitive data
+
+Before any event leaves your server, the SDK replaces the value of every key that names a secret with `[redacted]`, at any depth of `parameters`, `response` and `error`. This covers credential headers such as `authorization`, `cookie` and `x-api-key`, and keys with words such as `token`, `secret` or `password`. No option turns it off.
 
 AgentCat redacts all data sent to its servers and encrypts at rest, but for additional security, it offers a hook to do your own redaction on all text data returned back to our servers.
 

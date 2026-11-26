@@ -405,7 +405,7 @@ class TrackingTest < Minitest::Test
   end
 
   # `_meta` isn't an HTTP thing, so it shows up in `extra` on stdio too, as the client
-  # sent it.
+  # sent it, except that the sensitive key mask replaces `progressToken` (it ends in "token").
   def test_request_meta_lands_in_extra_without_an_http_request
     server = build_server
     client = track(server, project_id: PROJECT_ID)
@@ -414,11 +414,12 @@ class TrackingTest < Minitest::Test
     AgentCat.flush(timeout: 1)
 
     extra = client.last_event[:parameters]["extra"]
-    assert_equal({"requestId" => 2, "_meta" => {"progressToken" => 3, "claudecode/toolUseId" => "toolu_abc"}}, extra)
+    assert_equal({"requestId" => 2, "_meta" => {"progressToken" => "[redacted]", "claudecode/toolUseId" => "toolu_abc"}}, extra)
   end
 
   # The `mcp` gem has no auth of its own. A host that puts the request's auth into
-  # `server_context` (`auth_info:`) gets it on the event, as `extra.authInfo`.
+  # `server_context` (`auth_info:`) gets it on the event as `extra.authInfo`, and the
+  # sensitive key mask replaces it (`authInfo` names a secret).
   def test_auth_info_from_server_context_lands_in_extra
     server = MCP::Server.new(name: "auth-server", version: "1.0.0", tools: [echo_tool],
       server_context: {auth_info: {"clientId" => "client-1", "scopes" => ["read"]}})
@@ -426,7 +427,7 @@ class TrackingTest < Minitest::Test
 
     tool_result(server, "echo", {msg: "hi", session_id: "start"})
 
-    assert_equal({"clientId" => "client-1", "scopes" => ["read"]}, client.last_event[:parameters].dig("extra", "authInfo"))
+    assert_equal "[redacted]", client.last_event[:parameters].dig("extra", "authInfo")
   end
 
   # Key order: sessionId, requestId, _meta, requestInfo, authInfo. No `method` key.
