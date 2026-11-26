@@ -82,7 +82,7 @@ class Puma::Binder
   # pkg:gem/puma#lib/puma/binder.rb:59
   def activated_sockets; end
 
-  # pkg:gem/puma#lib/puma/binder.rb:370
+  # pkg:gem/puma#lib/puma/binder.rb:371
   def add_ssl_listener(host, port, ctx, optimize_for_latency = T.unsafe(nil), backlog = T.unsafe(nil)); end
 
   # Tell the server to listen on host +host+, port +port+.
@@ -92,12 +92,12 @@ class Puma::Binder
   # +backlog+ indicates how many unaccepted connections the kernel should
   # allow to accumulate before returning connection refused.
   #
-  # pkg:gem/puma#lib/puma/binder.rb:342
+  # pkg:gem/puma#lib/puma/binder.rb:343
   def add_tcp_listener(host, port, optimize_for_latency = T.unsafe(nil), backlog = T.unsafe(nil)); end
 
   # Tell the server to listen on +path+ as a UNIX domain socket.
   #
-  # pkg:gem/puma#lib/puma/binder.rb:421
+  # pkg:gem/puma#lib/puma/binder.rb:422
   def add_unix_listener(path, umask = T.unsafe(nil), mode = T.unsafe(nil), backlog = T.unsafe(nil)); end
 
   # pkg:gem/puma#lib/puma/binder.rb:147
@@ -106,7 +106,7 @@ class Puma::Binder
   # pkg:gem/puma#lib/puma/binder.rb:68
   def close; end
 
-  # pkg:gem/puma#lib/puma/binder.rb:468
+  # pkg:gem/puma#lib/puma/binder.rb:469
   def close_listeners; end
 
   # @!attribute [r] connected_ports
@@ -137,13 +137,13 @@ class Puma::Binder
   # pkg:gem/puma#lib/puma/binder.rb:59
   def envs; end
 
-  # pkg:gem/puma#lib/puma/binder.rb:401
+  # pkg:gem/puma#lib/puma/binder.rb:402
   def inherit_ssl_listener(fd, ctx); end
 
-  # pkg:gem/puma#lib/puma/binder.rb:363
+  # pkg:gem/puma#lib/puma/binder.rb:364
   def inherit_tcp_listener(host, port, fd); end
 
-  # pkg:gem/puma#lib/puma/binder.rb:456
+  # pkg:gem/puma#lib/puma/binder.rb:457
   def inherit_unix_listener(path, fd); end
 
   # @version 5.0.0
@@ -177,7 +177,7 @@ class Puma::Binder
   def localhost_authority; end
 
   # pkg:gem/puma#lib/puma/binder.rb:323
-  def localhost_authority_context; end
+  def localhost_authority_context(params = T.unsafe(nil)); end
 
   # pkg:gem/puma#lib/puma/binder.rb:153
   def parse(binds, log_writer = T.unsafe(nil), log_msg = T.unsafe(nil)); end
@@ -187,12 +187,12 @@ class Puma::Binder
   # pkg:gem/puma#lib/puma/binder.rb:59
   def proto_env; end
 
-  # pkg:gem/puma#lib/puma/binder.rb:481
+  # pkg:gem/puma#lib/puma/binder.rb:482
   def redirects_for_restart; end
 
   # @version 5.0.0
   #
-  # pkg:gem/puma#lib/puma/binder.rb:488
+  # pkg:gem/puma#lib/puma/binder.rb:489
   def redirects_for_restart_env; end
 
   # Synthesize binds from systemd socket activation
@@ -222,20 +222,20 @@ class Puma::Binder
 
   private
 
-  # pkg:gem/puma#lib/puma/binder.rb:496
+  # pkg:gem/puma#lib/puma/binder.rb:497
   def activated_keys_for(url); end
 
-  # pkg:gem/puma#lib/puma/binder.rb:526
+  # pkg:gem/puma#lib/puma/binder.rb:527
   def loc_addr_str(io); end
 
   # @!attribute [r] loopback_addresses
   #
-  # pkg:gem/puma#lib/puma/binder.rb:519
+  # pkg:gem/puma#lib/puma/binder.rb:520
   def loopback_addresses; end
 
   # @version 5.0.0
   #
-  # pkg:gem/puma#lib/puma/binder.rb:536
+  # pkg:gem/puma#lib/puma/binder.rb:537
   def socket_activation_fd(int); end
 end
 
@@ -3023,16 +3023,16 @@ class Puma::ErrorLogger
   # pkg:gem/puma#lib/puma/error_logger.rb:12
   def ioerr; end
 
-  # pkg:gem/puma#lib/puma/error_logger.rb:73
+  # pkg:gem/puma#lib/puma/error_logger.rb:74
   def request_dump(req); end
 
-  # pkg:gem/puma#lib/puma/error_logger.rb:91
+  # pkg:gem/puma#lib/puma/error_logger.rb:92
   def request_headers(req); end
 
-  # pkg:gem/puma#lib/puma/error_logger.rb:96
+  # pkg:gem/puma#lib/puma/error_logger.rb:97
   def request_parsed?(req); end
 
-  # pkg:gem/puma#lib/puma/error_logger.rb:78
+  # pkg:gem/puma#lib/puma/error_logger.rb:79
   def request_title(req); end
 
   # pkg:gem/puma#lib/puma/error_logger.rb:61
@@ -3040,7 +3040,7 @@ class Puma::ErrorLogger
 
   private
 
-  # pkg:gem/puma#lib/puma/error_logger.rb:100
+  # pkg:gem/puma#lib/puma/error_logger.rb:101
   def internal_write(str); end
 
   class << self
@@ -4356,12 +4356,12 @@ class Puma::Runner
 
   # @!attribute [r] app
   #
-  # pkg:gem/puma#lib/puma/runner.rb:174
+  # pkg:gem/puma#lib/puma/runner.rb:175
   def app; end
 
   # @version 5.0.0
   #
-  # pkg:gem/puma#lib/puma/runner.rb:95
+  # pkg:gem/puma#lib/puma/runner.rb:96
   def close_control_listeners; end
 
   # pkg:gem/puma#lib/puma/runner.rb:59
@@ -4373,7 +4373,7 @@ class Puma::Runner
   # pkg:gem/puma#lib/puma/runner.rb:55
   def error(str); end
 
-  # pkg:gem/puma#lib/puma/runner.rb:157
+  # pkg:gem/puma#lib/puma/runner.rb:158
   def load_and_bind; end
 
   # pkg:gem/puma#lib/puma/runner.rb:46
@@ -4385,19 +4385,19 @@ class Puma::Runner
   # pkg:gem/puma#lib/puma/runner.rb:28
   def options; end
 
-  # pkg:gem/puma#lib/puma/runner.rb:99
+  # pkg:gem/puma#lib/puma/runner.rb:100
   def output_header(mode); end
 
-  # pkg:gem/puma#lib/puma/runner.rb:130
+  # pkg:gem/puma#lib/puma/runner.rb:131
   def redirect_io; end
 
-  # pkg:gem/puma#lib/puma/runner.rb:126
+  # pkg:gem/puma#lib/puma/runner.rb:127
   def redirected_io?; end
 
   # pkg:gem/puma#lib/puma/runner.rb:63
   def start_control; end
 
-  # pkg:gem/puma#lib/puma/runner.rb:178
+  # pkg:gem/puma#lib/puma/runner.rb:179
   def start_server; end
 
   # @version 5.0.0
@@ -4411,23 +4411,23 @@ class Puma::Runner
   # pkg:gem/puma#lib/puma/runner.rb:30
   def wakeup!; end
 
-  # pkg:gem/puma#lib/puma/runner.rb:118
+  # pkg:gem/puma#lib/puma/runner.rb:119
   def warn_ruby_mn_threads; end
 
   private
 
   # this method call should always be guarded by `@log_writer.debug?`
   #
-  # pkg:gem/puma#lib/puma/runner.rb:209
+  # pkg:gem/puma#lib/puma/runner.rb:210
   def debug_loaded_extensions(str); end
 
-  # pkg:gem/puma#lib/puma/runner.rb:185
+  # pkg:gem/puma#lib/puma/runner.rb:186
   def ensure_output_directory_exists(path, io_name); end
 
-  # pkg:gem/puma#lib/puma/runner.rb:195
+  # pkg:gem/puma#lib/puma/runner.rb:196
   def stats; end
 
-  # pkg:gem/puma#lib/puma/runner.rb:191
+  # pkg:gem/puma#lib/puma/runner.rb:192
   def utc_iso8601(val); end
 end
 
