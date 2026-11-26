@@ -7,6 +7,8 @@ module AgentCat
   # `parameters.extra` — the incoming request's headers and full URL, shaped as
   # `{requestInfo: {headers: {...}, url: "..."}}` to match the TypeScript v1 and
   # Python SDKs (`event.parameters.extra.requestInfo`).
+  # `EventPipeline` masks the values of secret headers (`authorization`, `cookie`,
+  # `x-api-key` and others) before the event leaves the process; see `SensitiveKeys`.
   #
   # Why this exists: AgentCat reads client-identifying headers (User-Agent and
   # friends) to tell which agent harness made a call — "Claude Code", "Codex",

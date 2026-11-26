@@ -2,14 +2,15 @@
 
 require_relative "redaction"
 require_relative "sanitization"
+require_relative "sensitive_keys"
 require_relative "truncation"
 require_relative "delivery"
 require_relative "exporters"
 
 module AgentCat
   # What happens to an event once it's on the queue's worker thread: redact, sanitize,
-  # truncate, deliver, export. Shared by tool calls and tracked custom events so the two
-  # can't drift apart.
+  # mask sensitive keys, truncate, deliver, export. Shared by tool calls and tracked
+  # custom events so the two can't drift apart.
   module EventPipeline
     extend T::Sig
 
@@ -72,11 +73,28 @@ module AgentCat
 
     sig { params(event: UnredactedEvent, label: String).void }
     def self.sanitize_and_truncate(event, label:)
-      Sanitization.sanitize_event(event)
+      begin
+        Sanitization.sanitize_event(event)
+      ensure
+        # Runs even when sanitization raises: no field leaves unmasked.
+        mask_sensitive_keys(event, label: label)
+      end
       Truncation.truncate_event(event)
     rescue => e
       Log.warn("sanitizing or truncating #{label} failed with #{e.class}; the event goes out as it is")
       AgentCat.logger.debug { "sanitization/truncation failed for #{label}: #{e.class}: #{e.message}" }
+    end
+
+    # Never raises. A field the mask fails on is dropped: `response` and `error` become
+    # nil, and `parameters`, whose type does not allow nil, becomes an empty Hash.
+    sig { params(event: UnredactedEvent, label: String).void }
+    def self.mask_sensitive_keys(event, label:)
+      {parameters: {}, response: nil, error: nil}.each do |field, dropped|
+        event.public_send(:"#{field}=", SensitiveKeys.mask_sensitive_keys(event.public_send(field)))
+      rescue => e
+        event.public_send(:"#{field}=", dropped)
+        Log.warn("masking sensitive keys in #{field} of #{label} failed with #{e.class}; the event goes out without #{field}")
+      end
     end
   end
 end
